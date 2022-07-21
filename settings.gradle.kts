@@ -9,3 +9,4 @@ pluginManagement {
 rootProject.name = "Utility_Library"
 include(":android")
 include(":common")
+include(":monospacedTableFormatter")
