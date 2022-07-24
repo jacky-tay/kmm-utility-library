@@ -1,6 +1,6 @@
 package kmm.jacky.utilitylibrary.models
 
-import kmm.jacky.utilitylibrary.extensions.buildColumnReferences
+import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
 import kmm.jacky.utilitylibrary.extensions.isValid
 import kmm.jacky.utilitylibrary.models.column.Column
 import kmm.jacky.utilitylibrary.models.row.DividerRow
@@ -87,7 +87,8 @@ class Table internal constructor(
         val firstDefinition = definitions.firstOrNull()
         if (firstDefinition != null && firstDefinition.first > 0) {
             // loop before
-            rows.subList(0, firstDefinition.first).buildColumnReferences(firstDefinition.second, width)
+            val references = rows.subList(0, firstDefinition.first).buildColumnReferencesFromDefinitions(firstDefinition.second, width)
+
         }
         for (definition in definitions) {
 
@@ -98,6 +99,6 @@ class Table internal constructor(
     }
 
     override fun toString(): String {
-        return _rows.flatMap { it.toDisplayString() }.joinToString("\n")
+        TODO()
     }
 }

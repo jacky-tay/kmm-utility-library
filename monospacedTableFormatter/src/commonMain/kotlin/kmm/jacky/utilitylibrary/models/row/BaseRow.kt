@@ -14,41 +14,18 @@ class BaseRow(
     rowFormatters: Formatters? = null,
     formatter: ((KClass<*>) -> Any?)? = null
 ) : IRow {
-//    private val _columns = mutableListOf<Cell>()
+    override var width: Int = 0
 
     var columns: List<Cell>
         private set
-//        get() = _columns
 
-    val totalCount: Int
-        get() = columns.size
-
-    val totalSpannableCount: Int
-        get() = columns.fold(0) { sum, element ->
-            sum + element.span
-        }
+    internal constructor(vararg elements: Any) : this(elements.toList())
 
     init {
         fun getFormatter(input: Any): Any? {
             val type = input::class
             return rowFormatters?.get(type) ?: formatter?.invoke(type)
         }
-
-//        for (element in elements) {
-//            // insert index
-//            when (element) {
-//                is CurrencyWrapper -> {
-//                    val format = getFormatter(element)
-//                    val value = element.toString(format)
-//                    _columns.add(Cell(value))
-//                }
-//                is DividerRow -> _columns.add(Cell(DividerWrapper(element.char)))
-//                is SpacerRow -> _columns.add(Cell(" ").span(element.weight))
-//                is Cell -> _columns.add(element)
-//                else -> _columns.add(Cell(element))
-//            }
-//            _columns.last().index = _columns.size - 1 // pre-assign index
-//        }
 
         columns = elements.mapIndexed { index, element ->
             when (element) {
@@ -65,7 +42,11 @@ class BaseRow(
         columns.insertColumnDefinition(definitions)
     }
 
-    override fun toDisplayString(): List<String> {
+    override fun toDisplayString(reference: List<Column.Reference>?): List<String> {
+        if (reference == null) {
+
+        }
+
         return emptyList()
     }
 

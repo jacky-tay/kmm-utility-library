@@ -1,7 +1,7 @@
 package kmm.jacky.utilitylibrary
 
 import kmm.jacky.utilitylibrary.enums.CellSize
-import kmm.jacky.utilitylibrary.extensions.buildColumnReferences
+import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
 import kmm.jacky.utilitylibrary.extensions.span
 import kmm.jacky.utilitylibrary.extensions.updatePosition
 import kmm.jacky.utilitylibrary.models.column.Column
@@ -27,7 +27,6 @@ class ColumnReferenceTest {
         verify(3, 15, 17, 2)
     }
 
-
     @Test
     fun buildColumnReferenceTest() {
         val definitions = listOf(
@@ -37,11 +36,11 @@ class ColumnReferenceTest {
             Column.Definition(size = CellSize.ShrinkToFit)
         )
         val rows = listOf(
-            BaseRow(listOf("", "", "", "1")),
-            BaseRow(listOf("", "", "", "12")),
-            BaseRow(listOf("", "", "", "12"))
+            BaseRow("", "", "", "1"),
+            BaseRow("", "", "", "12"),
+            BaseRow("", "", "", "12")
         )
-        references = rows.buildColumnReferences(definitions, 40)
+        references = rows.buildColumnReferencesFromDefinitions(definitions, 40)
         assertEquals(4, references.size)
 
         verify(0, 0, 13, 13)
@@ -58,11 +57,11 @@ class ColumnReferenceTest {
             Column.Definition(size = CellSize.ShrinkToFit)
         )
         val rows = listOf(
-            BaseRow(listOf("", "", "1")),
-            BaseRow(listOf("".span(2), "12"))
+            BaseRow("", "", "1"),
+            BaseRow("".span(2), "12")
         )
         rows.forEach { it.insertColumnDefinition(definitions) }
-        references = rows.buildColumnReferences(definitions, 14) // 4, 2, 2
+        references = rows.buildColumnReferencesFromDefinitions(definitions, 14)
         assertEquals(3, references.size)
         verify(0, 0, 4, 4)
         verify(1, 7, 9, 2)

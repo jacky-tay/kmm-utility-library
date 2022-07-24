@@ -54,20 +54,20 @@ internal fun List<Cell>.insertColumnDefinition(definitions: List<Column.Definiti
     }
 }
 
-internal fun List<IRow>.buildColumnReferences(
-    definitions: List<Column.Definition>,
+internal fun List<Column.Definition>.buildColumnReferencesFromRows(
+    rows: List<BaseRow>,
     width: Int
 ): List<Column.Reference> {
-    val availableWidth = width - ((definitions.size - 1) * definitions.spacingWidth())
+    val availableWidth = width - ((size - 1) * spacingWidth())
     var remainingWidth: Double = availableWidth.toDouble()
-    val references = definitions.map { Column.Reference(availableWidth) }
+    val references = map { Column.Reference(availableWidth) }
 
-    for (i in definitions.indices) {
-        val size = definitions[i].size
+    for (i in indices) {
+        val size = this[i].size
         when (size) {
             is CellSize.FixedWidth -> size.width
             is CellSize.Percentage -> floor(availableWidth * size.factor).toInt()
-            is CellSize.ShrinkToFit -> filterIsInstance<BaseRow>().maxOf { it.getColumnWidthAt(i) }
+            is CellSize.ShrinkToFit -> rows.maxOf { it.getColumnWidthAt(i) }
             else -> null // do nothing for now
         }?.also { cellWidth ->
             references[i].len = cellWidth
@@ -75,12 +75,12 @@ internal fun List<IRow>.buildColumnReferences(
         }
     }
 
-    val totalWeight = definitions.fold(0) { sum, element ->
+    val totalWeight = fold(0) { sum, element ->
         sum + element.size.getWeightIfAvailable()
     }
     if (totalWeight > 0) {
-        for (i in definitions.indices) {
-            val weight = definitions[i].size.getWeightIfAvailable()
+        for (i in indices) {
+            val weight = this[i].size.getWeightIfAvailable()
             if (weight > 0) {
                 references[i].len = floor((remainingWidth * weight) / totalWeight).toInt()
             }
@@ -88,4 +88,11 @@ internal fun List<IRow>.buildColumnReferences(
     }
 
     return references.updatePosition()
+}
+
+internal fun List<IRow>.buildColumnReferencesFromDefinitions(
+    definitions: List<Column.Definition>,
+    width: Int
+): List<Column.Reference> {
+    return definitions.buildColumnReferencesFromRows(filterIsInstance<BaseRow>(), width)
 }

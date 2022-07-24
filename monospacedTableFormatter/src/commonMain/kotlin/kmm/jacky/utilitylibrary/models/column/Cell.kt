@@ -19,9 +19,9 @@ class Cell(
 
     constructor(
         input: Any,
-        alignment: Alignment = Alignment.Start,
+        alignment: Alignment = Alignment.Undefined,
         span: Int = 1,
-        size: CellSize = CellSize.EquallySpacing()
+        size: CellSize = CellSize.Undefined
     ) : this(input, span) {
         definition = Column.Definition(alignment, size)
     }
@@ -36,5 +36,9 @@ class Cell(
 
     fun align(alignment: Alignment): Cell = this.apply {
         definition.alignment = alignment
+    }
+
+    fun update(definition: Column.Definition) {
+        this.definition.update(definition)
     }
 }

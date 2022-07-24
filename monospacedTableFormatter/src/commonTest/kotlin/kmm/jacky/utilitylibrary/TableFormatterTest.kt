@@ -18,7 +18,7 @@ class TableFormatterTest {
     fun testExample() {
         val currencyFormatter = object : CurrencyFormatter() {
             override fun toString(number: Number): String {
-                val sign = if(number.isNegativeValue) "-" else ""
+                val sign = if (number.isNegativeValue) "-" else ""
                 return "$sign\$${abs(number.toDouble())}"
             }
         }
@@ -47,10 +47,10 @@ class TableFormatterTest {
             Row("Item Count:", 5, "Subtotal:", 33.98.currency)
             Row("Sales Tax:".end.span(3), 33.98.currency)
             Row("".span(2), Divider("="))
-            Row("Receipt 22317".span(2), "Total:".end, 33.98.currency)
+            Row("Receipt".end, 22317, "Total:".end, 33.98.currency)
             Spacer()
-            Row("Cash:".span(2).align(Alignment.End), 50.currency)
-            Row("Cash:".span(2).align(Alignment.End), (-16.02).currency)
+            Row("Cash:".span(3).align(Alignment.End), 50.currency)
+            Row("Cash:".span(3).align(Alignment.End), (-16.02).currency)
             Spacer()
             Divider()
             Row("Thank you for Shopping at Brandy's!".center)
@@ -66,7 +66,8 @@ class TableFormatterTest {
 
             assertEquals(4, (rows[10] as BaseRow).columns.size)
 
-            assertEquals("-$16.02", (rows[16] as BaseRow).columns.last().content)
+            assertEquals(1, (rows[19] as BaseRow).columns.size)
+            assertEquals(4, (rows[19] as BaseRow).columns[0].span)
         }
 
     }
