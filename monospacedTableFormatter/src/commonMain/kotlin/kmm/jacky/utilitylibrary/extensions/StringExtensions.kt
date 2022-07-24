@@ -12,3 +12,9 @@ val String.end: Cell
 fun String.span(span: Int): Cell = Cell(this, span = span)
 
 fun String.align(alignment: Alignment): Cell = Cell(this, alignment = alignment)
+
+fun String.buildRepeat(width: Int): String {
+    return (0..(width / length)).joinToString("") { this }.take(width)
+}
+
+
