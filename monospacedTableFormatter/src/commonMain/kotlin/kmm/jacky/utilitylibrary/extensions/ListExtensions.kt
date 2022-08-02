@@ -6,6 +6,20 @@ import kmm.jacky.utilitylibrary.models.column.Column
 import kmm.jacky.utilitylibrary.models.row.BaseRow
 import kmm.jacky.utilitylibrary.models.row.IRow
 import kotlin.math.floor
+import kotlin.math.max
+
+internal fun MutableList<String>.appendToLastItem(subString: String) {
+    this[size - 1] += subString
+}
+
+inline fun <T> List<T>.firstIndexFrom(from: Int, predicate: (T) -> Boolean): Int {
+    val start = max(0, from)
+    for (i in start until size) {
+        if (predicate(this[i]))
+            return i
+    }
+    return -1
+}
 
 internal fun List<*>.spacingWidth(): Int = if (size > 4) 2 else 3
 
