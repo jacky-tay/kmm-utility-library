@@ -67,7 +67,7 @@ internal fun List<Column.Definition>.buildColumnReferencesFromRows(
         when (size) {
             is CellSize.FixedWidth -> size.width
             is CellSize.Percentage -> floor(availableWidth * size.factor).toInt()
-            is CellSize.ShrinkToFit -> rows.maxOf { it.getColumnWidthAt(i) }
+            is CellSize.ShrinkToFit -> rows.maxOf { it.getColumnWidthAt(i, size) }
             else -> null // do nothing for now
         }?.also { cellWidth ->
             references[i].len = cellWidth
