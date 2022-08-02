@@ -68,6 +68,23 @@ class ColumnReferenceTest {
         verify(2, 12, 14, 2)
     }
 
+    @Test
+    fun buildColumnReferenceWithShrinkToFitTest() {
+        val definitions = listOf(
+            Column.Definition(size = CellSize.ShrinkToFit),
+            Column.Definition(size = CellSize.ShrinkToFit)
+        )
+        val rows = listOf(
+            BaseRow("12", "123\n12"),
+            BaseRow("1\n0", "1234")
+        )
+        rows.forEach { it.insertColumnDefinition(definitions) }
+        references = rows.buildColumnReferencesFromDefinitions(definitions, 14)
+        assertEquals(2, references.size)
+        verify(0, 0, 2, 2)
+        verify(1, 5, 9, 4)
+    }
+
     private fun verify(position: Int, start: Int, end: Int, len: Int) {
         assertEquals(start, references[position].start)
         assertEquals(end, references[position].end)

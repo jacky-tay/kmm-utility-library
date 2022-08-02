@@ -1,5 +1,6 @@
 package kmm.jacky.utilitylibrary.models.row
 
+import kmm.jacky.utilitylibrary.enums.CellSize
 import kmm.jacky.utilitylibrary.extensions.insertColumnDefinition
 import kmm.jacky.utilitylibrary.models.column.Cell
 import kmm.jacky.utilitylibrary.models.wrapper.CurrencyWrapper
@@ -50,8 +51,11 @@ class BaseRow(
         return emptyList()
     }
 
-    internal fun getColumnWidthAt(index: Int): Int {
+    internal fun getColumnWidthAt(index: Int, size: CellSize): Int {
         val cell = columns.firstOrNull { it.index == index } ?: return 0
+        if (size == CellSize.ShrinkToFit) {
+            return cell.content.lines().maxBy { it.length }.length
+        }
         return cell.content.length
     }
 }
