@@ -13,6 +13,20 @@ sealed class LineWrap {
 
     abstract fun wrap(text: String, boundary: Int): List<String>
 
+    /**
+     * Wrap the text when the given string @param text is longer than the constrained boundary.
+     * There are two types of word break policy: [WordBreakPolicy.Hyphen] and [WordBreakPolicy.None]
+     * Word break policy will only be applied if the whole word can not be fitted in single line,
+     * ie the boundary is smaller than the word's length.
+     *
+     * [WordBreakPolicy.Hyphen] will add '-' if the word cannot be fitted in line,
+     * the remaining word will be wrapped in the next line.
+     * [WordBreakPolicy.None] will break the word if the word cannot be fitted in line,
+     * the remaining word will be wrapped in the next line.
+     *
+     * @property policy The word breaking policy
+     * @constructor Create empty Normal
+     */
     class Normal(private val policy: WordBreakPolicy) : LineWrap() {
         override fun wrap(text: String, boundary: Int): List<String> {
             var pos = 0
@@ -24,8 +38,8 @@ sealed class LineWrap {
                 val processed = text.process(
                     pos, boundary, policy, when (index) {
                         0 -> pos
-                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 } ?: pos
-                        else -> spaces[index - 1].range.last
+                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 } ?: pos // + 1 so it's after the space
+                        else -> spaces[index - 1].range.last + 1 // + 1 so its after the space
                     },
                     if (index == -1) text.length else spaces[index].range.first
                 )
@@ -38,6 +52,7 @@ sealed class LineWrap {
 
     /**
      * Truncate word when the given string @param text is longer than the constrained boundary.
+     * This required less computation as it only render single line
      *
      * @property alignment: [Alignment.Start], [Alignment.Center], [Alignment.End], [Alignment.Undefined]
      *
