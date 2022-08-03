@@ -22,8 +22,11 @@ sealed class LineWrap {
             while (pos < text.length) {
                 index = spaces.firstIndexFrom(index) { it.range.first >= pos + boundary }
                 val processed = text.process(
-                    pos, boundary, policy,
-                    if (index < 1) pos else spaces[index - 1].range.first,
+                    pos, boundary, policy, when (index) {
+                        0 -> pos
+                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 } ?: pos
+                        else -> spaces[index - 1].range.last
+                    },
                     if (index == -1) text.length else spaces[index].range.first
                 )
                 result.add(processed.first)

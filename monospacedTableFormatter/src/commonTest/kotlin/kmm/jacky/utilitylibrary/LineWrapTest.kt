@@ -37,11 +37,10 @@ class LineWrapTest {
             listOf("Hello", "world", "!"),
             LineWrap.Normal(Hyphen).wrap(input, 5)
         )
-        // TODO
-//        assertEquals(
-//            listOf("Hel-", "lo", "wor-", "ld!"),
-//            LineWrap.Normal(Hyphen).wrap(input, 4)
-//        )
+        assertEquals(
+            listOf("Hel-", "lo ", "wor-", "ld!"),
+            LineWrap.Normal(Hyphen).wrap(input, 4)
+        )
     }
 
     @Test
