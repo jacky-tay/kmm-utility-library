@@ -6,6 +6,7 @@ import kmm.jacky.utilitylibrary.enums.LineWrap.WordBreakPolicy.Hyphen
 import kmm.jacky.utilitylibrary.enums.LineWrap.WordBreakPolicy.None
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class LineWrapTest {
 
@@ -22,7 +23,7 @@ class LineWrapTest {
             LineWrap.Normal(None).wrap(input, 5)
         )
         assertEquals(
-            listOf("Hell", "o wo", "rld!"),
+            listOf("Hell", "o ", "worl", "d!"),
             LineWrap.Normal(None).wrap(input, 4)
         )
     }
@@ -41,6 +42,28 @@ class LineWrapTest {
             listOf("Hel-", "lo ", "wor-", "ld!"),
             LineWrap.Normal(Hyphen).wrap(input, 4)
         )
+    }
+
+    @Test
+    fun testNormalWithLongerText() {
+        val longText =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ullamcorper suscipit neque. Vivamus augue est, hendrerit a gravida at, pharetra eget mauris. Mauris sollicitudin mauris vel purus maximus sodales. Donec lobortis diam orci, non luctus nisl suscipit a. Praesent convallis diam quis vehicula faucibus. Integer ac porta sapien. Sed sit."
+
+        val expect = listOf(
+            "Lorem ipsum dolor sit amet, consectetur ",
+            "adipiscing elit. Proin ullamcorper ",
+            "suscipit neque. Vivamus augue est, ",
+            "hendrerit a gravida at, pharetra eget ",
+            "mauris. Mauris sollicitudin mauris vel ",
+            "purus maximus sodales. Donec lobortis ",
+            "diam orci, non luctus nisl suscipit a. ",
+            "Praesent convallis diam quis vehicula ",
+            "faucibus. Integer ac porta sapien. Sed ",
+            "sit."
+        )
+        val actual = LineWrap.Normal(Hyphen).wrap(longText, 40)
+        assertEquals(expect, actual)
+        expect.forEach { assertTrue(it.length <= 40) }
     }
 
     @Test
