@@ -1,15 +1,10 @@
 package kmm.jacky.utilitylibrary.enums
 
+import kmm.jacky.utilitylibrary.extensions.findAllPunctuations
 import kmm.jacky.utilitylibrary.extensions.findAllSpaces
 import kmm.jacky.utilitylibrary.extensions.firstIndexFrom
-import kmm.jacky.utilitylibrary.extensions.process
 
 sealed class LineWrap {
-
-    enum class WordBreakPolicy(internal val text: String) {
-        Hyphen("-"),
-        None("")
-    }
 
     abstract fun wrap(text: String, boundary: Int): List<String>
 
@@ -28,6 +23,12 @@ sealed class LineWrap {
      * @constructor Create empty Normal
      */
     class Normal(private val policy: WordBreakPolicy) : LineWrap() {
+
+        enum class WordBreakPolicy(internal val text: String) {
+            Hyphen("-"),
+            None("")
+        }
+
         override fun wrap(text: String, boundary: Int): List<String> {
             var pos = 0
             var index = 0
@@ -38,7 +39,8 @@ sealed class LineWrap {
                 val processed = text.process(
                     pos, boundary, policy, when (index) {
                         0 -> pos
-                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 } ?: pos // + 1 so it's after the space
+                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 }
+                            ?: pos // + 1 so it's after the space
                         else -> spaces[index - 1].range.last + 1 // + 1 so its after the space
                     },
                     if (index == -1) text.length else spaces[index].range.first
@@ -48,28 +50,77 @@ sealed class LineWrap {
             }
             return result
         }
+
+        private fun String.process(
+            pos: Int,
+            boundary: Int,
+            wordBreakPolicy: WordBreakPolicy,
+            pointer0: Int,
+            pointer1: Int
+        ): Pair<String, Int> {
+            val wordWontFit = if (wordBreakPolicy == WordBreakPolicy.Hyphen)
+                substring(pointer0 until pointer1)
+            else ""
+
+            val shouldBreakWord = wordBreakPolicy == WordBreakPolicy.Hyphen &&
+                    wordWontFit.length > boundary
+
+            val punctuation = if (shouldBreakWord)
+                wordWontFit.findAllPunctuations().lastOrNull { it.range.first <= boundary }
+            else null
+
+            val shouldTruncate = shouldBreakWord &&
+                    (boundary - pointer0 + pos) > 2 && // can fit at least 3 characters
+                    pos <= pointer0
+
+            val shouldAddTruncatedHyphen = shouldTruncate && punctuation == null
+
+            val end = when {
+                shouldTruncate && punctuation != null ->
+                    pos + punctuation.range.first // break at any punctuation
+                shouldTruncate -> pos + boundary - wordBreakPolicy.text.length
+                (pointer1 - pos) < boundary -> pointer1
+                pos < pointer0 -> pointer0
+                else -> pos + boundary
+            }
+
+            val result =
+                substring(pos until end) + (if (shouldAddTruncatedHyphen) wordBreakPolicy.text else "")
+
+            val offset = when {
+                shouldAddTruncatedHyphen -> -1 // -1 if its truncated with hyphen
+                end < length && this[end] == ' ' -> 1 // add offset 1 if its a space
+                else -> 0
+            }
+            return Pair(result, pos + result.length + offset)
+        }
     }
 
     /**
      * Truncate word when the given string @param text is longer than the constrained boundary.
      * This required less computation as it only render single line
      *
-     * @property alignment: [Alignment.Start], [Alignment.Center], [Alignment.End], [Alignment.Undefined]
+     * @property policy: [Policy.Start], [Policy.Center], [Policy.End]
      *
      */
-    class Truncate(private val alignment: Alignment) : LineWrap() {
-        private val hyphenChar: String = "..."
+    class Truncate(private val policy: Truncate.Policy) : LineWrap() {
+
+        enum class Policy {
+            Start,
+            Center,
+            End
+        }
+
+        private val ellipsis = "..."
 
         /**
          * Wrap the text to the given boundary, whole text is returned if its within the constraint.
          *
-         * When [Alignment.Undefined] is selected, then it will defaulted to [Alignment.End]
          * ```
          * Input    : Hello world
          * Start    : ... World
          * Center   : Hel...rld
          * End      : Hello ...
-         * Undefined: Hello ...
          * ```
          * @param text Input text wrapped if required
          * @param boundary The constrained that total amount of characters is allowed with the given boundary
@@ -77,12 +128,12 @@ sealed class LineWrap {
          */
         override fun wrap(text: String, boundary: Int): List<String> = listOf(
             if (text.length > boundary) {
-                when (alignment) {
-                    Alignment.Start -> hyphenChar + text.takeLast(boundary - 3)
-                    Alignment.Center -> ((boundary - 3) / 2).let {
-                        "${text.take(it)}$hyphenChar${text.takeLast(boundary - 3 - it)}"
+                when (policy) {
+                    Policy.Start -> ellipsis + text.takeLast(boundary - 3)
+                    Policy.Center -> ((boundary - 3) / 2).let {
+                        "${text.take(it)}$ellipsis${text.takeLast(boundary - 3 - it)}"
                     }
-                    Alignment.End, Alignment.Undefined -> text.take(boundary - 3) + hyphenChar
+                    Policy.End -> text.take(boundary - 3) + ellipsis
                 }
             } else {
                 text

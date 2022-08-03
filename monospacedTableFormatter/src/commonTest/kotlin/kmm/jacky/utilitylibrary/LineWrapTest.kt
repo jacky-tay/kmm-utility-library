@@ -1,9 +1,11 @@
 package kmm.jacky.utilitylibrary
 
-import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.LineWrap
-import kmm.jacky.utilitylibrary.enums.LineWrap.WordBreakPolicy.Hyphen
-import kmm.jacky.utilitylibrary.enums.LineWrap.WordBreakPolicy.None
+import kmm.jacky.utilitylibrary.enums.LineWrap.Truncate.Policy.End
+import kmm.jacky.utilitylibrary.enums.LineWrap.Truncate.Policy.Start
+import kmm.jacky.utilitylibrary.enums.LineWrap.Truncate.Policy.Center
+import kmm.jacky.utilitylibrary.enums.LineWrap.Normal.WordBreakPolicy.Hyphen
+import kmm.jacky.utilitylibrary.enums.LineWrap.Normal.WordBreakPolicy.None
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -71,41 +73,31 @@ class LineWrapTest {
         // truncate start
         assertEquals(
             listOf("Hello world!"),
-            LineWrap.Truncate(Alignment.Start).wrap(input, 20)
+            LineWrap.Truncate(Start).wrap(input, 20)
         )
         assertEquals(
             listOf("... world!"),
-            LineWrap.Truncate(Alignment.Start).wrap(input, 10)
+            LineWrap.Truncate(Start).wrap(input, 10)
         )
 
         // truncate center
         assertEquals(
             listOf("Hello world!"),
-            LineWrap.Truncate(Alignment.Center).wrap(input, 20)
+            LineWrap.Truncate(Center).wrap(input, 20)
         )
         assertEquals(
             listOf("Hel...rld!"),
-            LineWrap.Truncate(Alignment.Center).wrap(input, 10)
+            LineWrap.Truncate(Center).wrap(input, 10)
         )
 
         // truncate end
         assertEquals(
             listOf("Hello world!"),
-            LineWrap.Truncate(Alignment.End).wrap(input, 20)
+            LineWrap.Truncate(End).wrap(input, 20)
         )
         assertEquals(
             listOf("Hello w..."),
-            LineWrap.Truncate(Alignment.End).wrap(input, 10)
-        )
-
-        // truncate undefined
-        assertEquals(
-            listOf("Hello world!"),
-            LineWrap.Truncate(Alignment.Undefined).wrap(input, 20)
-        )
-        assertEquals(
-            listOf("Hello w..."),
-            LineWrap.Truncate(Alignment.Undefined).wrap(input, 10)
+            LineWrap.Truncate(End).wrap(input, 10)
         )
     }
 }
