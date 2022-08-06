@@ -24,11 +24,6 @@ sealed class LineWrap {
      */
     class Normal(private val policy: WordBreakPolicy) : LineWrap() {
 
-        enum class WordBreakPolicy(internal val text: String) {
-            Hyphen("-"),
-            None("")
-        }
-
         override fun wrap(text: String, boundary: Int): List<String> {
             var pos = 0
             var index = 0
@@ -100,16 +95,10 @@ sealed class LineWrap {
      * Truncate word when the given string @param text is longer than the constrained boundary.
      * This required less computation as it only render single line
      *
-     * @property policy: [Policy.Start], [Policy.Center], [Policy.End]
+     * @property policy: [TruncatePolicy.Start], [TruncatePolicy.Center], [TruncatePolicy.End]
      *
      */
-    class Truncate(private val policy: Truncate.Policy) : LineWrap() {
-
-        enum class Policy {
-            Start,
-            Center,
-            End
-        }
+    class Truncate(private val policy: TruncatePolicy) : LineWrap() {
 
         private val ellipsis = "..."
 
@@ -129,11 +118,11 @@ sealed class LineWrap {
         override fun wrap(text: String, boundary: Int): List<String> = listOf(
             if (text.length > boundary) {
                 when (policy) {
-                    Policy.Start -> ellipsis + text.takeLast(boundary - 3)
-                    Policy.Center -> ((boundary - 3) / 2).let {
+                    TruncatePolicy.Start -> ellipsis + text.takeLast(boundary - 3)
+                    TruncatePolicy.Center -> ((boundary - 3) / 2).let {
                         "${text.take(it)}$ellipsis${text.takeLast(boundary - 3 - it)}"
                     }
-                    Policy.End -> text.take(boundary - 3) + ellipsis
+                    TruncatePolicy.End -> text.take(boundary - 3) + ellipsis
                 }
             } else {
                 text

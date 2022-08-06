@@ -1,5 +1,6 @@
 package kmm.jacky.utilitylibrary.models
 
+import kmm.jacky.utilitylibrary.enums.LineWrap
 import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
 import kmm.jacky.utilitylibrary.extensions.isValid
 import kmm.jacky.utilitylibrary.models.column.Column
@@ -10,7 +11,8 @@ import kmm.jacky.utilitylibrary.models.row.SpacerRow
 import kmm.jacky.utilitylibrary.public.Formatters
 
 class Table internal constructor(
-    val width: Int,
+    private val width: Int,
+    private val tablePolicy: LineWrap,
     private val divider: String = "-",
     private val formatters: Formatters
 ) {
@@ -37,11 +39,11 @@ class Table internal constructor(
     }
 
     @Suppress("FunctionName")
-    fun Row(vararg elements: Any) {
+    fun Row(vararg elements: Any, policy: LineWrap = tablePolicy) {
         // ensuring no void function is included
         val filtered = processRowElements(elements)
 
-        val row = BaseRow(filtered, rowFormatters = null) {
+        val row = BaseRow(policy, filtered, rowFormatters = null) {
             formatters[it]
         }
 
