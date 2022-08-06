@@ -2,15 +2,17 @@ package kmm.jacky.utilitylibrary.models.column
 
 import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.CellSize
+import kmm.jacky.utilitylibrary.enums.LineWrap
+import kmm.jacky.utilitylibrary.extensions.buildRepeat
 import kmm.jacky.utilitylibrary.models.wrapper.DividerWrapper
 
 class Cell(
-    input: Any,
+    val input: Any,
     var span: Int = 1,
 ) : Column {
     var index = 0
 
-    var content: String = when (input) {
+    val content: String = when (input) {
         is String -> input
         is DividerWrapper -> "" // TODO
         else -> input.toString()
@@ -40,5 +42,11 @@ class Cell(
 
     fun update(definition: Column.Definition) {
         this.definition.update(definition)
+    }
+
+    fun buildString(boundary: Int, policy: LineWrap): List<String> = when (input) {
+        is String -> policy.wrap(input, boundary)
+        is DividerWrapper -> listOf(input.char.buildRepeat(boundary))
+        else -> policy.wrap(input.toString(), boundary)
     }
 }

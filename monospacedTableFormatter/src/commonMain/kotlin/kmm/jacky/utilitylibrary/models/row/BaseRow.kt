@@ -1,6 +1,9 @@
 package kmm.jacky.utilitylibrary.models.row
 
 import kmm.jacky.utilitylibrary.enums.CellSize
+import kmm.jacky.utilitylibrary.enums.LineWrap
+import kmm.jacky.utilitylibrary.enums.WordBreakPolicy
+import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
 import kmm.jacky.utilitylibrary.extensions.insertColumnDefinition
 import kmm.jacky.utilitylibrary.models.column.Cell
 import kmm.jacky.utilitylibrary.models.wrapper.CurrencyWrapper
@@ -11,6 +14,7 @@ import kmm.jacky.utilitylibrary.public.Formatters
 import kotlin.reflect.KClass
 
 class BaseRow(
+    private val policy: LineWrap,
     elements: List<Any>,
     rowFormatters: Formatters? = null,
     formatter: ((KClass<*>) -> Any?)? = null
@@ -20,7 +24,9 @@ class BaseRow(
     var columns: List<Cell>
         private set
 
-    internal constructor(vararg elements: Any) : this(elements.toList())
+    internal constructor(
+        vararg elements: Any
+    ) : this(LineWrap.Normal(WordBreakPolicy.Hyphen), elements.toList())
 
     init {
         fun getFormatter(input: Any): Any? {
@@ -44,9 +50,11 @@ class BaseRow(
     }
 
     override fun toDisplayString(reference: List<Column.Reference>?): List<String> {
-        if (reference == null) {
-
-        }
+        val references = reference ?: listOf(this).buildColumnReferencesFromDefinitions(
+            columns.map { it.definition },
+            width
+        )
+        val cells = columns.map { it.buildString(references[it.index].len, policy) }
 
         return emptyList()
     }

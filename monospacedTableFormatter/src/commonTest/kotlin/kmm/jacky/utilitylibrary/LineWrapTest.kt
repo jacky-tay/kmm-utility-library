@@ -1,11 +1,11 @@
 package kmm.jacky.utilitylibrary
 
 import kmm.jacky.utilitylibrary.enums.LineWrap
-import kmm.jacky.utilitylibrary.enums.LineWrap.Truncate.Policy.End
-import kmm.jacky.utilitylibrary.enums.LineWrap.Truncate.Policy.Start
-import kmm.jacky.utilitylibrary.enums.LineWrap.Truncate.Policy.Center
-import kmm.jacky.utilitylibrary.enums.LineWrap.Normal.WordBreakPolicy.Hyphen
-import kmm.jacky.utilitylibrary.enums.LineWrap.Normal.WordBreakPolicy.None
+import kmm.jacky.utilitylibrary.enums.TruncatePolicy.End
+import kmm.jacky.utilitylibrary.enums.TruncatePolicy.Start
+import kmm.jacky.utilitylibrary.enums.TruncatePolicy.Center
+import kmm.jacky.utilitylibrary.enums.WordBreakPolicy.Hyphen
+import kmm.jacky.utilitylibrary.enums.WordBreakPolicy.None
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
