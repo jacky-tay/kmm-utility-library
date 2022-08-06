@@ -11,7 +11,12 @@ sealed interface CellSize {
 
     class FixedWidth(val width: Int) : CellSize
 
-    class Percentage(val factor: Double) : CellSize // range between 0.0 ... 1.0
+    class Percentage(val factor: Double) : CellSize { // range between 0.0 ... 1.0
+        init {
+            if (!((0.0)..(1.0)).contains(factor))
+                throw IllegalArgumentException("Factor should be range between 0.0 and 1.0 inclusively")
+        }
+    }
 
     fun update(size: CellSize): CellSize = when(this) {
         Undefined -> size
