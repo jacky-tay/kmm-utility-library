@@ -9,6 +9,15 @@ import kmm.jacky.utilitylibrary.enums.Alignment.Bottom
 import kmm.jacky.utilitylibrary.enums.Alignment.Top
 import kmm.jacky.utilitylibrary.enums.Alignment.Undefined
 import kmm.jacky.utilitylibrary.enums.Alignment
+import kmm.jacky.utilitylibrary.enums.JointedAlignments
+import kmm.jacky.utilitylibrary.extensions.canJoinWith
+import kmm.jacky.utilitylibrary.extensions.horizontal
+import kmm.jacky.utilitylibrary.extensions.isCenter
+import kmm.jacky.utilitylibrary.extensions.isHorizontal
+import kmm.jacky.utilitylibrary.extensions.isVertical
+import kmm.jacky.utilitylibrary.extensions.plus
+import kmm.jacky.utilitylibrary.extensions.update
+import kmm.jacky.utilitylibrary.extensions.vertical
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.Test
@@ -75,11 +84,11 @@ class AlignmentTests {
         fun assertCanJoin(alignment: Alignment, vararg other: Alignment) = other.forEach {
             assertTrue(alignment.canJoinWith(it))
             assertTrue(it.canJoinWith(alignment))
-            ((alignment + it) as Alignment.Jointed).alignments.run {
+            ((alignment + it) as JointedAlignments).alignments.run {
                 assertTrue(contains(alignment))
                 assertTrue(contains(it))
             }
-            ((it + alignment) as Alignment.Jointed).alignments.run {
+            ((it + alignment) as JointedAlignments).alignments.run {
                 assertTrue(contains(alignment))
                 assertTrue(contains(it))
             }
@@ -108,11 +117,11 @@ class AlignmentTests {
     fun testCenterAlignments() {
         fun assertCenterJoint(other: Alignment, transformed: Alignment) {
             assertTrue(Center.canJoinWith(other))
-            ((Center + other) as Alignment.Jointed).alignments.run {
+            ((Center + other) as JointedAlignments).alignments.run {
                 assertTrue(contains(other))
                 assertTrue(contains(transformed))
             }
-            ((other + Center) as Alignment.Jointed).alignments.run {
+            ((other + Center) as JointedAlignments).alignments.run {
                 assertTrue(contains(other))
                 assertTrue(contains(transformed))
             }
