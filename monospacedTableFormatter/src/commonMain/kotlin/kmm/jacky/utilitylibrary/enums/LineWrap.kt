@@ -4,9 +4,9 @@ import kmm.jacky.utilitylibrary.extensions.findAllPunctuations
 import kmm.jacky.utilitylibrary.extensions.findAllSpaces
 import kmm.jacky.utilitylibrary.extensions.firstIndexFrom
 
-sealed class LineWrap {
+sealed interface LineWrap {
 
-    abstract fun wrap(text: String, boundary: Int): List<String>
+    fun wrap(text: String, boundary: Int): List<String>
 
     /**
      * Wrap the text when the given string @param text is longer than the constrained boundary.
@@ -22,7 +22,7 @@ sealed class LineWrap {
      * @property policy The word breaking policy
      * @constructor Create empty Normal
      */
-    class Normal(private val policy: WordBreakPolicy) : LineWrap() {
+    class Normal(private val policy: WordBreakPolicy) : LineWrap {
 
         override fun wrap(text: String, boundary: Int): List<String> {
             var pos = 0
@@ -98,7 +98,7 @@ sealed class LineWrap {
      * @property policy: [TruncatePolicy.Start], [TruncatePolicy.Center], [TruncatePolicy.End]
      *
      */
-    class Truncate(private val policy: TruncatePolicy) : LineWrap() {
+    class Truncate(private val policy: TruncatePolicy) : LineWrap {
 
         private val ellipsis = "..."
 

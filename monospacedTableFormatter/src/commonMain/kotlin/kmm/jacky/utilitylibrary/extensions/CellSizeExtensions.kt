@@ -12,4 +12,3 @@ fun CellSize.getWeightIfAvailable(): Int = when (this) {
     is CellSize.ExpandToFit -> 1
     else -> 0
 }
-
