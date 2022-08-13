@@ -19,13 +19,11 @@ internal fun Alignment.vertical(): Alignment = when {
 
 internal fun Alignment.isHorizontal(): Boolean = when (this) {
     Alignment.Start, Alignment.CenterHorizontally, Alignment.End, Alignment.Center -> true
-    is JointedAlignments -> alignments.any { it.isHorizontal() }
     else -> false
 }
 
 internal fun Alignment.isVertical(): Boolean = when (this) {
     Alignment.Top, Alignment.CenterVertically, Alignment.Bottom, Alignment.Center -> true
-    is JointedAlignments -> alignments.any { it.isVertical() }
     else -> false
 }
 

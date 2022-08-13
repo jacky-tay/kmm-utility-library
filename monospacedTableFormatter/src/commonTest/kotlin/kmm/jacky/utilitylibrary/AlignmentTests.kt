@@ -1,15 +1,17 @@
 package kmm.jacky.utilitylibrary
 
-import kmm.jacky.utilitylibrary.enums.Alignment.Start
-import kmm.jacky.utilitylibrary.enums.Alignment.End
-import kmm.jacky.utilitylibrary.enums.Alignment.Center
-import kmm.jacky.utilitylibrary.enums.Alignment.CenterVertically
-import kmm.jacky.utilitylibrary.enums.Alignment.CenterHorizontally
+import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.Alignment.Bottom
+import kmm.jacky.utilitylibrary.enums.Alignment.Center
+import kmm.jacky.utilitylibrary.enums.Alignment.CenterHorizontally
+import kmm.jacky.utilitylibrary.enums.Alignment.CenterVertically
+import kmm.jacky.utilitylibrary.enums.Alignment.End
+import kmm.jacky.utilitylibrary.enums.Alignment.Start
 import kmm.jacky.utilitylibrary.enums.Alignment.Top
 import kmm.jacky.utilitylibrary.enums.Alignment.Undefined
-import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.JointedAlignments
+import kmm.jacky.utilitylibrary.extensions.buildContent
+import kmm.jacky.utilitylibrary.extensions.buildString
 import kmm.jacky.utilitylibrary.extensions.canJoinWith
 import kmm.jacky.utilitylibrary.extensions.horizontal
 import kmm.jacky.utilitylibrary.extensions.isCenter
@@ -18,10 +20,10 @@ import kmm.jacky.utilitylibrary.extensions.isVertical
 import kmm.jacky.utilitylibrary.extensions.plus
 import kmm.jacky.utilitylibrary.extensions.update
 import kmm.jacky.utilitylibrary.extensions.vertical
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class AlignmentTests {
 
@@ -111,6 +113,23 @@ class AlignmentTests {
 
         assertCanJoin(CenterVertically, Start, End, CenterHorizontally)
         assertCannotJoin(CenterVertically, Top, Bottom, CenterVertically, Undefined)
+    }
+
+    @Test
+    fun testJointedAlignmentWithoutShifted() {
+        fun assertJointHorizontal(horizontal: Alignment, vertical: Alignment) {
+            assertEquals(horizontal, (horizontal + vertical).horizontal())
+            assertEquals(vertical, (horizontal + vertical).vertical())
+        }
+
+        val horizontals = listOf(Start, CenterHorizontally, End)
+        val verticals = listOf(Top, CenterVertically, Bottom)
+
+        horizontals.forEach { horizontal ->
+            verticals.forEach { vertical ->
+                assertJointHorizontal(horizontal, vertical)
+            }
+        }
     }
 
     @Test
