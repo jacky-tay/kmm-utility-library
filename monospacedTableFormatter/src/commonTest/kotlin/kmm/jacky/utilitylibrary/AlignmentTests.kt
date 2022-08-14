@@ -230,4 +230,121 @@ class AlignmentTests {
         assertFalse(alignment.canJoinWith(it))
         assertFalse(it.canJoinWith(alignment))
     }
+
+    @Test
+    fun testHorizontalStringAlignmentBuilderEvenBoundary() {
+        val input = "Hello world"
+        val boundary = 20
+        assertEquals("Hello world         ", Start.buildString(input, boundary))
+        assertEquals("     Hello world    ", CenterHorizontally.buildString(input, boundary))
+        assertEquals("         Hello world", End.buildString(input, boundary))
+        assertEquals("     Hello world    ", Center.buildString(input, boundary))
+        assertEquals("Hello world         ", Top.buildString(input, boundary))
+        assertEquals("Hello world         ", CenterVertically.buildString(input, boundary))
+        assertEquals("Hello world         ", Bottom.buildString(input, boundary))
+        assertEquals("Hello world         ", Undefined.buildString(input, boundary))
+    }
+
+    @Test
+    fun testHorizontalStringAlignmentBuilderOddBoundary() {
+        val input = "Hello world"
+        val boundary = 21
+        assertEquals("Hello world          ", Start.buildString(input, boundary))
+        assertEquals("     Hello world     ", CenterHorizontally.buildString(input, boundary))
+        assertEquals("          Hello world", End.buildString(input, boundary))
+        assertEquals("     Hello world     ", Center.buildString(input, boundary))
+        assertEquals("Hello world          ", Top.buildString(input, boundary))
+        assertEquals("Hello world          ", CenterVertically.buildString(input, boundary))
+        assertEquals("Hello world          ", Bottom.buildString(input, boundary))
+        assertEquals("Hello world          ", Undefined.buildString(input, boundary))
+    }
+
+    @Test
+    fun testVerticalStringAlignmentBuilder() {
+        fun assert(
+            jointed: Alignment,
+            input: List<String>,
+            maxRow: Int,
+            boundary: Int,
+            vararg expect: String
+        ) {
+            assertEquals(
+                expect.toList(),
+                jointed.buildContent(input, boundary, maxRow)
+            )
+        }
+
+        assert(
+            Start + Top, listOf("Hello world"), 2, 16,
+            "Hello world     ", "                "
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello world"), 2, 16,
+            "Hello world     ", "                "
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello world"), 2, 16,
+            "                ", "Hello world     "
+        )
+
+        assert(
+            Start + Top, listOf("Hello world"), 3, 16,
+            "Hello world     ", "                ", "                "
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello world"), 3, 16,
+            "                ", "Hello world     ", "                "
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello world"), 3, 16,
+            "                ", "                ", "Hello world     "
+        )
+
+        assert(
+            Start + Top, listOf("Hello", "world"), 2, 5,
+            "Hello", "world"
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello", "world"), 2, 5,
+            "Hello", "world"
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello", "world"), 2, 5,
+            "Hello", "world"
+        )
+
+        assert(
+            Start + Top, listOf("Hello", "world"), 3, 5,
+            "Hello", "world", "     "
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello", "world"), 3, 5,
+            "Hello", "world", "     "
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello", "world"), 3, 5,
+            "     ", "Hello", "world"
+        )
+
+        assert(
+            Start + Top, listOf("Hello", "world"), 4, 5,
+            "Hello", "world", "     ", "     "
+        )
+        assert(
+            Start + CenterVertically, listOf("Hello", "world"), 4, 5,
+            "     ", "Hello", "world", "     "
+        )
+        assert(
+            Start + Bottom, listOf("Hello", "world"), 4, 5,
+            "     ", "     ", "Hello", "world",
+        )
+    }
 }
