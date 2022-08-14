@@ -133,6 +133,27 @@ class AlignmentTests {
     }
 
     @Test
+    fun testJointedAlignmentForCenter() {
+        fun assert(alignment: Alignment, horizontal: Alignment, vertical: Alignment) {
+            ((Center + alignment) as JointedAlignments).also {
+                assertEquals(horizontal, it.horizontal())
+                assertEquals(vertical, it.vertical())
+            }
+            ((alignment + Center) as JointedAlignments).also {
+                assertEquals(horizontal, it.horizontal())
+                assertEquals(vertical, it.vertical())
+            }
+        }
+
+        assert(Start, Start, CenterVertically)
+        assert(CenterHorizontally, CenterHorizontally, CenterVertically)
+        assert(End, End, CenterVertically)
+        assert(Top, CenterHorizontally, Top)
+        assert(CenterVertically, CenterHorizontally, CenterVertically)
+        assert(Bottom, CenterHorizontally, Bottom)
+    }
+
+    @Test
     fun testCenterAlignments() {
         fun assertCenterJoint(other: Alignment, transformed: Alignment) {
             assertTrue(Center.canJoinWith(other))
