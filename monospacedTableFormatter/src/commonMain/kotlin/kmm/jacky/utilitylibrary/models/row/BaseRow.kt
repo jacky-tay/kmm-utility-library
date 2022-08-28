@@ -4,6 +4,9 @@ import kmm.jacky.utilitylibrary.enums.CellSize
 import kmm.jacky.utilitylibrary.enums.LineWrap
 import kmm.jacky.utilitylibrary.enums.WordBreakPolicy
 import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
+import kmm.jacky.utilitylibrary.extensions.buildContent
+import kmm.jacky.utilitylibrary.extensions.buildPrefix
+import kmm.jacky.utilitylibrary.extensions.buildRepeat
 import kmm.jacky.utilitylibrary.extensions.insertColumnDefinition
 import kmm.jacky.utilitylibrary.models.column.Cell
 import kmm.jacky.utilitylibrary.models.wrapper.CurrencyWrapper
@@ -54,9 +57,22 @@ class BaseRow(
             columns.map { it.definition },
             width
         )
-        val cells = columns.map { it.buildString(references[it.index].len, policy) }
 
-        return emptyList()
+        val cells = columns.map { it.buildString(references[it.index].len, policy) }
+        val maxHeight = cells.maxOf { it.size }
+
+        return (0 until maxHeight).map { row ->
+            var string = " ".buildRepeat(width)
+            columns.forEachIndexed { index, cell ->
+                val ref = references[index]
+                cell.definition.alignment.buildContent(cells[index], ref.len, row, maxHeight)?.let {
+                    val start = ref.start + it.first
+                    val text = cells[index][it.second]
+                    string = string.replaceRange(start, start + text.length, text)
+                }
+            }
+            string
+        }
     }
 
     internal fun getColumnWidthAt(index: Int, size: CellSize): Int {
