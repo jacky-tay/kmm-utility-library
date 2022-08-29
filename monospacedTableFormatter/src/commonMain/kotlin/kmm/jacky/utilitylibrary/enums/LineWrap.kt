@@ -25,23 +25,27 @@ sealed interface LineWrap {
     class Normal(private val policy: WordBreakPolicy) : LineWrap {
 
         override fun wrap(text: String, boundary: Int): List<String> {
-            var pos = 0
-            var index = 0
             val result = mutableListOf<String>()
-            val spaces = text.findAllSpaces()
-            while (pos < text.length) {
-                index = spaces.firstIndexFrom(index) { it.range.first >= pos + boundary }
-                val processed = text.process(
-                    pos, boundary, policy, when (index) {
-                        0 -> pos
-                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 }
-                            ?: pos // + 1 so it's after the space
-                        else -> spaces[index - 1].range.last + 1 // + 1 so its after the space
-                    },
-                    if (index == -1) text.length else spaces[index].range.first
-                )
-                result.add(processed.first)
-                pos = processed.second
+            val lines = text.lines()
+
+            lines.forEach { line ->
+                var pos = 0
+                var index = 0
+                val spaces = line.findAllSpaces()
+                while (pos < line.length) {
+                    index = spaces.firstIndexFrom(index) { it.range.first >= pos + boundary }
+                    val processed = line.process(
+                        pos, boundary, policy, when (index) {
+                            0 -> pos
+                            -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 }
+                                ?: pos // + 1 so it's after the space
+                            else -> spaces[index - 1].range.last + 1 // + 1 so its after the space
+                        },
+                        if (index == -1) line.length else spaces[index].range.first
+                    )
+                    result.add(processed.first)
+                    pos = processed.second
+                }
             }
             return result
         }

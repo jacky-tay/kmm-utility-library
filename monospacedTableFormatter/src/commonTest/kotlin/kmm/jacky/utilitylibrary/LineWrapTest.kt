@@ -47,6 +47,27 @@ class LineWrapTest {
     }
 
     @Test
+    fun textNormalWithLineBreak() {
+        assertEquals(
+            listOf("Hello", "World"),
+            LineWrap.Normal(None).wrap("Hello\nWorld", 5)
+        )
+        assertEquals(
+            listOf("Hello", "World"),
+            LineWrap.Normal(None).wrap("Hello \nWorld", 5)
+        )
+        assertEquals(
+            listOf("Hello", "World"),
+            LineWrap.Normal(Hyphen).wrap("Hello\nWorld", 5)
+        )
+        assertEquals(
+            listOf("Hello", "World"),
+            LineWrap.Normal(Hyphen).wrap("Hello \nWorld", 5)
+        )
+    }
+
+
+    @Test
     fun testNormalWithLongerText() {
         val longText =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ullamcorper suscipit neque. Vivamus augue est, hendrerit a gravida at, pharetra eget mauris. Mauris sollicitudin mauris vel purus maximus sodales. Donec lobortis diam orci, non luctus nisl suscipit a. Praesent convallis diam quis vehicula faucibus. Integer ac porta sapien. Sed sit."
