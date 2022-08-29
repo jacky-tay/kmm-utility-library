@@ -1,5 +1,6 @@
 package kmm.jacky.utilitylibrary
 
+import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.CellSize
 import kmm.jacky.utilitylibrary.enums.LineWrap
 import kmm.jacky.utilitylibrary.enums.WordBreakPolicy
@@ -26,6 +27,25 @@ class BaseRowTests {
         )
         val actual = row.toDisplayString(null)
         val expect = listOf("hello     world     10")
+        assertEquals(expect, actual)
+    }
+
+    @Test
+    fun testBaseRowBottomAlignment() {
+        val row = BaseRow(
+            policy = LineWrap.Normal(WordBreakPolicy.Hyphen),
+            elements = listOf("hello", "world !!", "10")
+        )
+        row.width = 22
+        row.insertColumnDefinition(
+            listOf(
+                Column.Definition(size = CellSize.ExpandToFit),
+                Column.Definition(size = CellSize.ExpandToFit),
+                Column.Definition(size = CellSize.ShrinkToFit, alignment = Alignment.Bottom)
+            )
+        )
+        val actual = row.toDisplayString(null)
+        val expect = listOf("hello     world       ", "          !!        10")
         assertEquals(expect, actual)
     }
 }
