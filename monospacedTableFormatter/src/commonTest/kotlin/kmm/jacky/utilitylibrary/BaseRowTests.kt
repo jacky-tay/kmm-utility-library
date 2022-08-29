@@ -31,6 +31,25 @@ class BaseRowTests {
     }
 
     @Test
+    fun testBaseRowCenterAlignment() {
+        val row = BaseRow(
+            policy = LineWrap.Normal(WordBreakPolicy.Hyphen),
+            elements = listOf("hello", "hello world !!", "10")
+        )
+        row.width = 22
+        row.insertColumnDefinition(
+            listOf(
+                Column.Definition(size = CellSize.ExpandToFit),
+                Column.Definition(size = CellSize.ExpandToFit),
+                Column.Definition(size = CellSize.ShrinkToFit, alignment = Alignment.Center)
+            )
+        )
+        val actual = row.toDisplayString(null)
+        val expect = listOf("hello     hello       ", "          world     10", "          !!          ")
+        assertEquals(expect, actual)
+    }
+
+    @Test
     fun testBaseRowBottomAlignment() {
         val row = BaseRow(
             policy = LineWrap.Normal(WordBreakPolicy.Hyphen),

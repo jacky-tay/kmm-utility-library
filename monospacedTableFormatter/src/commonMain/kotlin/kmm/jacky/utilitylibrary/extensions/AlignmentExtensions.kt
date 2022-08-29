@@ -85,9 +85,11 @@ internal fun Alignment.buildContent(
             ), row
         )
         vertical is Alignment.CenterVertically -> {
-            val index = maxRow - row - input.size
             val half = round(diff / 2.0).toInt()
-            null
+            val index = half - row
+            if (index >= 0 && index < input.size)
+                Pair(buildPrefix(input[index].length, boundary), index)
+            else null
         }
         vertical is Alignment.Bottom -> {
             val index = row + input.size - maxRow
