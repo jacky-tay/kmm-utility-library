@@ -3,7 +3,7 @@ package kmm.jacky.utilitylibrary.extensions
 import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.JointedAlignments
 import kotlin.math.ceil
-import kotlin.math.floor
+import kotlin.math.max
 import kotlin.math.round
 
 internal fun Alignment.horizontal(): Alignment = when {
@@ -59,49 +59,74 @@ operator fun Alignment.plus(alignment: Alignment): Alignment {
     throw UnsupportedOperationException("$this and $alignment cannot be joint")
 }
 
-internal fun Alignment.buildString(string: String, boundary: Int): String {
-    if (string.length == boundary) return string
-    else if (string.length > boundary) throw IndexOutOfBoundsException()
+internal fun Alignment.buildPrefix(stringLen: Int, boundary: Int): Int {
+    if (stringLen == boundary) return 0
+    else if (stringLen > boundary) throw IndexOutOfBoundsException()
 
-    val horizontal = horizontal()
-    val stringBuilder = StringBuilder()
-    val prefix: Int = when (horizontal) {
-        is Alignment.CenterHorizontally -> ceil((boundary - string.length) / 2.0).toInt()
-        is Alignment.End -> boundary - string.length
+    return when (horizontal()) {
+        is Alignment.CenterHorizontally -> ceil((boundary - stringLen) / 2.0).toInt()
+        is Alignment.End -> boundary - stringLen
         else -> 0
     }
-    stringBuilder.append(" ".buildRepeat(prefix))
-    stringBuilder.append(string)
-    val suffix: Int = when (horizontal) {
-        is Alignment.Start -> boundary - string.length
-        is Alignment.CenterHorizontally -> boundary - string.length - prefix
-        else -> 0
-    }
-    stringBuilder.append(" ".buildRepeat(suffix))
-    return stringBuilder.toString()
 }
 
-internal fun Alignment.buildContent(input: List<String>, boundary: Int, maxRow: Int): List<String> {
-    val shiftedHorizontally = input.map { this.buildString(it, boundary) }
-    if (input.size == maxRow) return shiftedHorizontally
-    else if (input.size > maxRow) throw IndexOutOfBoundsException()
-
+internal fun Alignment.getRowIndexAfterOffset(
+    inputSize: Int,
+    row: Int,
+    maxRow: Int
+): Int {
+    val diff = maxRow - inputSize
+    val half = round(diff / 2.0).toInt()
     val vertical = vertical()
-    val result = shiftedHorizontally.toMutableList()
-    val template = " ".buildRepeat(boundary)
-    val diff = maxRow - input.size
-    when (vertical) {
-        is Alignment.Top -> repeat(diff) { result.add(template) }
-        is Alignment.CenterVertically -> {
-            val half = round(diff / 2.0).toInt()
-            repeat(half) { result.add(0, template) }
-            val remaining = maxRow - result.size
-            repeat(remaining) { result.add(template) }
+    return max(
+        -1, when {
+            vertical is Alignment.Top && row < inputSize -> row
+            vertical is Alignment.CenterVertically && (0 until inputSize).contains(row - half) -> row - half
+            vertical is Alignment.Bottom && (0 until inputSize).contains(row - diff) -> row - diff
+            else -> -1
         }
-        is Alignment.Bottom -> repeat(maxRow - input.size) {
-            result.add(0, template)
-        }
-        else -> Unit
-    }
-    return result
+    )
 }
+
+internal data class ContentOffset(
+    val prefix: Int,
+    val row: Int
+)
+
+internal fun Alignment.buildContent(
+    input: List<String>,
+    boundary: Int,
+    row: Int,
+    maxRow: Int
+): ContentOffset? {
+    val rowOffset = getRowIndexAfterOffset(input.size, row, maxRow)
+    return if (rowOffset != -1) {
+        ContentOffset(prefix = buildPrefix(input[rowOffset].length, boundary), row = rowOffset)
+    } else null
+}
+
+//
+//internal fun Alignment.buildContent(input: List<String>, boundary: Int, maxRow: Int): List<String> {
+//    val shiftedHorizontally = input.map { this.buildString(it, boundary) }
+//    if (input.size == maxRow) return shiftedHorizontally
+//    else if (input.size > maxRow) throw IndexOutOfBoundsException()
+//
+//    val vertical = vertical()
+//    val result = shiftedHorizontally.toMutableList()
+//    val template = " ".buildRepeat(boundary)
+//    val diff = maxRow - input.size
+//    when (vertical) {
+//        is Alignment.Top -> repeat(diff) { result.add(template) }
+//        is Alignment.CenterVertically -> {
+//            val half = round(diff / 2.0).toInt()
+//            repeat(half) { result.add(0, template) }
+//            val remaining = maxRow - result.size
+//            repeat(remaining) { result.add(template) }
+//        }
+//        is Alignment.Bottom -> repeat(maxRow - input.size) {
+//            result.add(0, template)
+//        }
+//        else -> Unit
+//    }
+//    return result
+//}

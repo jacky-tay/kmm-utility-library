@@ -44,9 +44,17 @@ class Cell(
         this.definition.update(definition)
     }
 
-    fun buildString(boundary: Int, policy: LineWrap): List<String> = when (input) {
-        is String -> policy.wrap(input, boundary)
-        is DividerWrapper -> listOf(input.char.buildRepeat(boundary))
-        else -> policy.wrap(input.toString(), boundary)
-    }
+    fun buildString(boundary: Int, policy: LineWrap): List<String> =
+        if (definition.size == CellSize.ShrinkToFit) listOf(
+            when (input) {
+                is String -> input
+                is DividerWrapper -> input.char.buildRepeat(boundary)
+                else -> input.toString()
+            }
+        )
+        else when (input) {
+            is String -> policy.wrap(input, boundary)
+            is DividerWrapper -> listOf(input.char.buildRepeat(boundary))
+            else -> policy.wrap(input.toString(), boundary)
+        }
 }

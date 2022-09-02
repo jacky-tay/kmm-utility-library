@@ -1,4 +1,3 @@
 package kmm.jacky.utilitylibrary.models.wrapper
 
-data class DividerWrapper(val char: String) {
-}
+data class DividerWrapper(val char: String)
