@@ -66,7 +66,6 @@ class LineWrapTest {
         )
     }
 
-
     @Test
     fun testNormalWithLongerText() {
         val longText =

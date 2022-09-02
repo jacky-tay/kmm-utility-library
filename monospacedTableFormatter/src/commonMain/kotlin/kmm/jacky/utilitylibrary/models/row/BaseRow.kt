@@ -16,20 +16,31 @@ import kmm.jacky.utilitylibrary.models.wrapper.SpacerWrapper
 import kmm.jacky.utilitylibrary.public.Formatters
 import kotlin.reflect.KClass
 
-class BaseRow(
+internal class BaseRow(
     private val policy: LineWrap,
     elements: List<Any>,
     rowFormatters: Formatters? = null,
     formatter: ((KClass<*>) -> Any?)? = null
 ) : IRow {
+
     override var width: Int = 0
 
     var columns: List<Cell>
         private set
 
     internal constructor(
-        vararg elements: Any
-    ) : this(LineWrap.Normal(WordBreakPolicy.Hyphen), elements.toList())
+        vararg arguments: Any
+    ) : this(LineWrap.Normal(WordBreakPolicy.Hyphen), arguments.toList())
+
+    internal constructor(
+        width: Int,
+        policy: LineWrap,
+        elements: List<Any>,
+        rowFormatters: Formatters? = null,
+        formatter: ((KClass<*>) -> Any?)? = null
+    ) : this(policy, elements, rowFormatters, formatter) {
+        this.width = width
+    }
 
     init {
         fun getFormatter(input: Any): Any? {
@@ -48,7 +59,7 @@ class BaseRow(
         }
     }
 
-    fun insertColumnDefinition(definitions: List<Column.Definition>) {
+    internal fun insertColumnDefinition(definitions: List<Column.Definition>) {
         columns.insertColumnDefinition(definitions)
     }
 
@@ -66,8 +77,8 @@ class BaseRow(
             columns.forEachIndexed { index, cell ->
                 val ref = references[index]
                 cell.definition.alignment.buildContent(cells[index], ref.len, row, maxHeight)?.let {
-                    val start = ref.start + it.first
-                    val text = cells[index][it.second]
+                    val start = ref.start + it.prefix
+                    val text = cells[index][it.row]
                     string = string.replaceRange(start, start + text.length, text)
                 }
             }

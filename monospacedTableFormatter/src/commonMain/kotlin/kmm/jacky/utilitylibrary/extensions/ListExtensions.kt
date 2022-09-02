@@ -76,6 +76,13 @@ internal fun List<Column.Definition>.buildColumnReferencesFromRows(
     var remainingWidth: Double = availableWidth.toDouble()
     val references = map { Column.Reference(availableWidth) }
 
+    // set undefined size to equally spacing 1
+    forEachIndexed { index, definition ->
+        if (definition.size is CellSize.Undefined) {
+            this[index].size = CellSize.EquallySpacing(1)
+        }
+    }
+
     for (i in indices) {
         val size = this[i].size
         when (size) {

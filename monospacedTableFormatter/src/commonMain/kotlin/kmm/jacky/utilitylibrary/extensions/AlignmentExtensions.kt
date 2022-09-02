@@ -3,6 +3,7 @@ package kmm.jacky.utilitylibrary.extensions
 import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.JointedAlignments
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.round
 
 internal fun Alignment.horizontal(): Alignment = when {
@@ -69,34 +70,39 @@ internal fun Alignment.buildPrefix(stringLen: Int, boundary: Int): Int {
     }
 }
 
+internal fun Alignment.getRowIndexAfterOffset(
+    inputSize: Int,
+    row: Int,
+    maxRow: Int
+): Int {
+    val diff = maxRow - inputSize
+    val half = round(diff / 2.0).toInt()
+    val vertical = vertical()
+    return max(
+        -1, when {
+            vertical is Alignment.Top && row < inputSize -> row
+            vertical is Alignment.CenterVertically && (0 until inputSize).contains(row - half) -> row - half
+            vertical is Alignment.Bottom && (0 until inputSize).contains(row - diff) -> row - diff
+            else -> -1
+        }
+    )
+}
+
+internal data class ContentOffset(
+    val prefix: Int,
+    val row: Int
+)
+
 internal fun Alignment.buildContent(
     input: List<String>,
     boundary: Int,
     row: Int,
     maxRow: Int
-): Pair<Int, Int>? {
-    val vertical = vertical()
-    val diff = maxRow - input.size
-    return when {
-        vertical is Alignment.Top && row < input.size -> Pair(
-            buildPrefix(
-                input[row].length,
-                boundary
-            ), row
-        )
-        vertical is Alignment.CenterVertically -> {
-            val half = round(diff / 2.0).toInt()
-            val index = half - row
-            if (index >= 0 && index < input.size)
-                Pair(buildPrefix(input[index].length, boundary), index)
-            else null
-        }
-        vertical is Alignment.Bottom -> {
-            val index = row + input.size - maxRow
-            if (index >= 0) Pair(buildPrefix(input[index].length, boundary), index) else null
-        }
-        else -> null
-    }
+): ContentOffset? {
+    val rowOffset = getRowIndexAfterOffset(input.size, row, maxRow)
+    return if (rowOffset != -1) {
+        ContentOffset(prefix = buildPrefix(input[rowOffset].length, boundary), row = rowOffset)
+    } else null
 }
 
 //

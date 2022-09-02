@@ -12,6 +12,7 @@ import kmm.jacky.utilitylibrary.enums.Alignment.Undefined
 import kmm.jacky.utilitylibrary.enums.JointedAlignments
 import kmm.jacky.utilitylibrary.extensions.buildPrefix
 import kmm.jacky.utilitylibrary.extensions.canJoinWith
+import kmm.jacky.utilitylibrary.extensions.getRowIndexAfterOffset
 import kmm.jacky.utilitylibrary.extensions.horizontal
 import kmm.jacky.utilitylibrary.extensions.isCenter
 import kmm.jacky.utilitylibrary.extensions.isHorizontal
@@ -256,6 +257,55 @@ class AlignmentTests {
         assertEquals(0, CenterVertically.buildPrefix(input, boundary))   // "Hello world          "
         assertEquals(0, Bottom.buildPrefix(input, boundary))             // "Hello world          "
         assertEquals(0, Undefined.buildPrefix(input, boundary))          // "Hello world          "
+    }
+
+    @Test
+    fun testGetRowIndexAfterAlignmentOffset() {
+        // odd input size, even max row
+        assertEquals(0, Top.getRowIndexAfterOffset(1, 0, 2))
+        assertEquals(-1, Top.getRowIndexAfterOffset(1, 1, 2))
+
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(1, 0, 2))
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(1, 1, 2))
+
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(1, 0, 2))
+        assertEquals(0, Bottom.getRowIndexAfterOffset(1, 1, 2))
+
+        // odd input size, odd max row
+        assertEquals(0, Top.getRowIndexAfterOffset(1, 0, 3))
+        assertEquals(-1, Top.getRowIndexAfterOffset(1, 1, 3))
+        assertEquals(-1, Top.getRowIndexAfterOffset(1, 2, 3))
+
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(1, 0, 3))
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(1, 1, 3))
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(1, 2, 3))
+
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(1, 0, 3))
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(1, 1, 3))
+        assertEquals(0, Bottom.getRowIndexAfterOffset(1, 2, 3))
+
+        // even input size, even max row
+        assertEquals(0, Top.getRowIndexAfterOffset(2, 0, 2))
+        assertEquals(1, Top.getRowIndexAfterOffset(2, 1, 2))
+
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(2, 0, 2))
+        assertEquals(1, CenterVertically.getRowIndexAfterOffset(2, 1, 2))
+
+        assertEquals(0, Bottom.getRowIndexAfterOffset(2, 0, 2))
+        assertEquals(1, Bottom.getRowIndexAfterOffset(2, 1, 2))
+
+        // even input size, odd max row
+        assertEquals(0, Top.getRowIndexAfterOffset(2, 0, 3))
+        assertEquals(1, Top.getRowIndexAfterOffset(2, 1, 3))
+        assertEquals(-1, Top.getRowIndexAfterOffset(2, 2, 3))
+
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(2, 0, 3))
+        assertEquals(1, CenterVertically.getRowIndexAfterOffset(2, 1, 3))
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(2, 2, 3))
+
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(2, 0, 3))
+        assertEquals(0, Bottom.getRowIndexAfterOffset(2, 1, 3))
+        assertEquals(1, Bottom.getRowIndexAfterOffset(2, 2, 3))
     }
 /*
     @Test

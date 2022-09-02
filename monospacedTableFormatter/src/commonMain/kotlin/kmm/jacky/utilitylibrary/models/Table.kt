@@ -43,7 +43,7 @@ class Table internal constructor(
         // ensuring no void function is included
         val filtered = processRowElements(elements)
 
-        val row = BaseRow(policy, filtered, rowFormatters = null) {
+        val row = BaseRow(width = width, policy, filtered, rowFormatters = null) {
             formatters[it]
         }
 
@@ -56,11 +56,6 @@ class Table internal constructor(
 
     @Suppress("FunctionName")
     fun Divider(char: String = divider): DividerRow {
-//        val definition = getDefinition(_rows.size)
-//        val divider = Cell(char)
-//        if (definition != null) {
-//            divider.span(definition.size)
-//        }
         val row = DividerRow(char)
         _rows.add(row)
         return row
@@ -89,7 +84,8 @@ class Table internal constructor(
         val firstDefinition = definitions.firstOrNull()
         if (firstDefinition != null && firstDefinition.first > 0) {
             // loop before
-            val references = rows.subList(0, firstDefinition.first).buildColumnReferencesFromDefinitions(firstDefinition.second, width)
+            val references = rows.subList(0, firstDefinition.first)
+                .buildColumnReferencesFromDefinitions(firstDefinition.second, width)
 
         }
         for (definition in definitions) {
