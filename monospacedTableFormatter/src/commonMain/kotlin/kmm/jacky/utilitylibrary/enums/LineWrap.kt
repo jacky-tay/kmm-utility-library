@@ -4,9 +4,9 @@ import kmm.jacky.utilitylibrary.extensions.findAllPunctuations
 import kmm.jacky.utilitylibrary.extensions.findAllSpaces
 import kmm.jacky.utilitylibrary.extensions.firstIndexFrom
 
-sealed class LineWrap {
+sealed interface LineWrap {
 
-    abstract fun wrap(text: String, boundary: Int): List<String>
+    fun wrap(text: String, boundary: Int): List<String>
 
     /**
      * Wrap the text when the given string @param text is longer than the constrained boundary.
@@ -22,26 +22,36 @@ sealed class LineWrap {
      * @property policy The word breaking policy
      * @constructor Create empty Normal
      */
-    class Normal(private val policy: WordBreakPolicy) : LineWrap() {
+    class Normal(private val policy: WordBreakPolicy) : LineWrap {
 
         override fun wrap(text: String, boundary: Int): List<String> {
-            var pos = 0
-            var index = 0
+            if (boundary <= 0) throw AssertionError("Boundary ($boundary) should not be lesser than 1")
+
             val result = mutableListOf<String>()
-            val spaces = text.findAllSpaces()
-            while (pos < text.length) {
-                index = spaces.firstIndexFrom(index) { it.range.first >= pos + boundary }
-                val processed = text.process(
-                    pos, boundary, policy, when (index) {
-                        0 -> pos
-                        -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 }
-                            ?: pos // + 1 so it's after the space
-                        else -> spaces[index - 1].range.last + 1 // + 1 so its after the space
-                    },
-                    if (index == -1) text.length else spaces[index].range.first
-                )
-                result.add(processed.first)
-                pos = processed.second
+            val lines = text.lines()
+
+            lines.forEach { line ->
+                if (line.length <= boundary) {
+                    result.add(line)
+                } else {
+                    var pos = 0
+                    var index = 0
+                    val spaces = line.findAllSpaces()
+                    while (pos < line.length) {
+                        index = spaces.firstIndexFrom(index) { it.range.first >= pos + boundary }
+                        val processed = line.process(
+                            pos, boundary, policy, when (index) {
+                                0 -> pos
+                                -1 -> spaces.lastOrNull()?.range?.last?.let { it + 1 }
+                                    ?: pos // + 1 so it's after the space
+                                else -> spaces[index - 1].range.last + 1 // + 1 so its after the space
+                            },
+                            if (index == -1) line.length else spaces[index].range.first
+                        )
+                        result.add(processed.first)
+                        pos = processed.second
+                    }
+                }
             }
             return result
         }
@@ -98,7 +108,7 @@ sealed class LineWrap {
      * @property policy: [TruncatePolicy.Start], [TruncatePolicy.Center], [TruncatePolicy.End]
      *
      */
-    class Truncate(private val policy: TruncatePolicy) : LineWrap() {
+    class Truncate(private val policy: TruncatePolicy) : LineWrap {
 
         private val ellipsis = "..."
 

@@ -8,10 +8,6 @@ import kmm.jacky.utilitylibrary.models.row.IRow
 import kotlin.math.floor
 import kotlin.math.max
 
-internal fun MutableList<String>.appendToLastItem(subString: String) {
-    this[size - 1] += subString
-}
-
 inline fun <T> List<T>.firstIndexFrom(from: Int, predicate: (T) -> Boolean): Int {
     val start = max(0, from)
     for (i in start until size) {
@@ -75,6 +71,13 @@ internal fun List<Column.Definition>.buildColumnReferencesFromRows(
     val availableWidth = width - ((size - 1) * spacingWidth())
     var remainingWidth: Double = availableWidth.toDouble()
     val references = map { Column.Reference(availableWidth) }
+
+    // set undefined size to equally spacing 1
+    forEachIndexed { index, definition ->
+        if (definition.size is CellSize.Undefined) {
+            this[index].size = CellSize.EquallySpacing(1)
+        }
+    }
 
     for (i in indices) {
         val size = this[i].size

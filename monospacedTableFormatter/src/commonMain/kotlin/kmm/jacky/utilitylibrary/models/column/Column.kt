@@ -2,6 +2,7 @@ package kmm.jacky.utilitylibrary.models.column
 
 import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.CellSize
+import kmm.jacky.utilitylibrary.extensions.update
 
 interface Column {
     var definition: Definition

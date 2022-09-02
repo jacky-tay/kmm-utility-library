@@ -26,4 +26,3 @@ fun Number.align(alignment: Alignment): Cell = Cell(this, alignment = alignment)
 
 val Number.currency: CurrencyWrapper
     get() = CurrencyWrapper(this)
-

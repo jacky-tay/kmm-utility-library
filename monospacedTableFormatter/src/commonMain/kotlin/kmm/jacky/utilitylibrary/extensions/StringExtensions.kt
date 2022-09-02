@@ -14,14 +14,13 @@ fun String.span(span: Int): Cell = Cell(this, span = span)
 
 fun String.align(alignment: Alignment): Cell = Cell(this, alignment = alignment)
 
-fun String.buildRepeat(width: Int): String {
-    return StringBuilder().let { builder ->
+fun String.buildRepeat(width: Int): String =
+    if (width == 0) "" else StringBuilder().let { builder ->
         repeat(ceil(width.toDouble() / length).toInt()) {
             builder.append(this)
         }
         builder.toString()
     }.take(width)
-}
 
 internal fun String.findAllPunctuations(): List<MatchResult> {
     return "[\\p{Punct}]+".toRegex().findAll(this).toList()

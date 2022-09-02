@@ -1,18 +1,29 @@
 package kmm.jacky.utilitylibrary
 
-import kmm.jacky.utilitylibrary.enums.Alignment.Start
-import kmm.jacky.utilitylibrary.enums.Alignment.End
-import kmm.jacky.utilitylibrary.enums.Alignment.Center
-import kmm.jacky.utilitylibrary.enums.Alignment.CenterVertically
-import kmm.jacky.utilitylibrary.enums.Alignment.CenterHorizontally
+import kmm.jacky.utilitylibrary.enums.Alignment
 import kmm.jacky.utilitylibrary.enums.Alignment.Bottom
+import kmm.jacky.utilitylibrary.enums.Alignment.Center
+import kmm.jacky.utilitylibrary.enums.Alignment.CenterHorizontally
+import kmm.jacky.utilitylibrary.enums.Alignment.CenterVertically
+import kmm.jacky.utilitylibrary.enums.Alignment.End
+import kmm.jacky.utilitylibrary.enums.Alignment.Start
 import kmm.jacky.utilitylibrary.enums.Alignment.Top
 import kmm.jacky.utilitylibrary.enums.Alignment.Undefined
-import kmm.jacky.utilitylibrary.enums.Alignment
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kmm.jacky.utilitylibrary.enums.JointedAlignments
+import kmm.jacky.utilitylibrary.extensions.buildPrefix
+import kmm.jacky.utilitylibrary.extensions.canJoinWith
+import kmm.jacky.utilitylibrary.extensions.getRowIndexAfterOffset
+import kmm.jacky.utilitylibrary.extensions.horizontal
+import kmm.jacky.utilitylibrary.extensions.isCenter
+import kmm.jacky.utilitylibrary.extensions.isHorizontal
+import kmm.jacky.utilitylibrary.extensions.isVertical
+import kmm.jacky.utilitylibrary.extensions.plus
+import kmm.jacky.utilitylibrary.extensions.update
+import kmm.jacky.utilitylibrary.extensions.vertical
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class AlignmentTests {
 
@@ -75,11 +86,11 @@ class AlignmentTests {
         fun assertCanJoin(alignment: Alignment, vararg other: Alignment) = other.forEach {
             assertTrue(alignment.canJoinWith(it))
             assertTrue(it.canJoinWith(alignment))
-            ((alignment + it) as Alignment.Jointed).alignments.run {
+            ((alignment + it) as JointedAlignments).alignments.run {
                 assertTrue(contains(alignment))
                 assertTrue(contains(it))
             }
-            ((it + alignment) as Alignment.Jointed).alignments.run {
+            ((it + alignment) as JointedAlignments).alignments.run {
                 assertTrue(contains(alignment))
                 assertTrue(contains(it))
             }
@@ -105,14 +116,52 @@ class AlignmentTests {
     }
 
     @Test
+    fun testJointedAlignmentWithoutShifted() {
+        fun assertJointHorizontal(horizontal: Alignment, vertical: Alignment) {
+            assertEquals(horizontal, (horizontal + vertical).horizontal())
+            assertEquals(vertical, (horizontal + vertical).vertical())
+        }
+
+        val horizontals = listOf(Start, CenterHorizontally, End)
+        val verticals = listOf(Top, CenterVertically, Bottom)
+
+        horizontals.forEach { horizontal ->
+            verticals.forEach { vertical ->
+                assertJointHorizontal(horizontal, vertical)
+            }
+        }
+    }
+
+    @Test
+    fun testJointedAlignmentForCenter() {
+        fun assert(alignment: Alignment, horizontal: Alignment, vertical: Alignment) {
+            ((Center + alignment) as JointedAlignments).also {
+                assertEquals(horizontal, it.horizontal())
+                assertEquals(vertical, it.vertical())
+            }
+            ((alignment + Center) as JointedAlignments).also {
+                assertEquals(horizontal, it.horizontal())
+                assertEquals(vertical, it.vertical())
+            }
+        }
+
+        assert(Start, Start, CenterVertically)
+        assert(CenterHorizontally, CenterHorizontally, CenterVertically)
+        assert(End, End, CenterVertically)
+        assert(Top, CenterHorizontally, Top)
+        assert(CenterVertically, CenterHorizontally, CenterVertically)
+        assert(Bottom, CenterHorizontally, Bottom)
+    }
+
+    @Test
     fun testCenterAlignments() {
         fun assertCenterJoint(other: Alignment, transformed: Alignment) {
             assertTrue(Center.canJoinWith(other))
-            ((Center + other) as Alignment.Jointed).alignments.run {
+            ((Center + other) as JointedAlignments).alignments.run {
                 assertTrue(contains(other))
                 assertTrue(contains(transformed))
             }
-            ((other + Center) as Alignment.Jointed).alignments.run {
+            ((other + Center) as JointedAlignments).alignments.run {
                 assertTrue(contains(other))
                 assertTrue(contains(transformed))
             }
@@ -181,4 +230,170 @@ class AlignmentTests {
         assertFalse(alignment.canJoinWith(it))
         assertFalse(it.canJoinWith(alignment))
     }
+
+    @Test
+    fun testHorizontalStringAlignmentBuilderEvenBoundary() {
+        val input = "Hello world".length
+        val boundary = 20
+        assertEquals(0, Start.buildPrefix(input, boundary))              // "Hello world         "
+        assertEquals(5, CenterHorizontally.buildPrefix(input, boundary)) // "     Hello world    "
+        assertEquals(9, End.buildPrefix(input, boundary))                // "         Hello world"
+        assertEquals(5, Center.buildPrefix(input, boundary))             // "     Hello world    "
+        assertEquals(0, Top.buildPrefix(input, boundary))                // "Hello world         "
+        assertEquals(0, CenterVertically.buildPrefix(input, boundary))   // "Hello world         "
+        assertEquals(0, Bottom.buildPrefix(input, boundary))             // "Hello world         "
+        assertEquals(0, Undefined.buildPrefix(input, boundary))          // "Hello world         "
+    }
+
+    @Test
+    fun testHorizontalStringAlignmentBuilderOddBoundary() {
+        val input = "Hello world".length
+        val boundary = 21
+        assertEquals(0, Start.buildPrefix(input, boundary))              // "Hello world          "
+        assertEquals(5, CenterHorizontally.buildPrefix(input, boundary)) // "     Hello world     "
+        assertEquals(10, End.buildPrefix(input, boundary))               // "          Hello world"
+        assertEquals(5, Center.buildPrefix(input, boundary))             // "     Hello world     "
+        assertEquals(0, Top.buildPrefix(input, boundary))                // "Hello world          "
+        assertEquals(0, CenterVertically.buildPrefix(input, boundary))   // "Hello world          "
+        assertEquals(0, Bottom.buildPrefix(input, boundary))             // "Hello world          "
+        assertEquals(0, Undefined.buildPrefix(input, boundary))          // "Hello world          "
+    }
+
+    @Test
+    fun testGetRowIndexAfterAlignmentOffset() {
+        // odd input size, even max row
+        assertEquals(0, Top.getRowIndexAfterOffset(1, 0, 2))
+        assertEquals(-1, Top.getRowIndexAfterOffset(1, 1, 2))
+
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(1, 0, 2))
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(1, 1, 2))
+
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(1, 0, 2))
+        assertEquals(0, Bottom.getRowIndexAfterOffset(1, 1, 2))
+
+        // odd input size, odd max row
+        assertEquals(0, Top.getRowIndexAfterOffset(1, 0, 3))
+        assertEquals(-1, Top.getRowIndexAfterOffset(1, 1, 3))
+        assertEquals(-1, Top.getRowIndexAfterOffset(1, 2, 3))
+
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(1, 0, 3))
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(1, 1, 3))
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(1, 2, 3))
+
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(1, 0, 3))
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(1, 1, 3))
+        assertEquals(0, Bottom.getRowIndexAfterOffset(1, 2, 3))
+
+        // even input size, even max row
+        assertEquals(0, Top.getRowIndexAfterOffset(2, 0, 2))
+        assertEquals(1, Top.getRowIndexAfterOffset(2, 1, 2))
+
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(2, 0, 2))
+        assertEquals(1, CenterVertically.getRowIndexAfterOffset(2, 1, 2))
+
+        assertEquals(0, Bottom.getRowIndexAfterOffset(2, 0, 2))
+        assertEquals(1, Bottom.getRowIndexAfterOffset(2, 1, 2))
+
+        // even input size, odd max row
+        assertEquals(0, Top.getRowIndexAfterOffset(2, 0, 3))
+        assertEquals(1, Top.getRowIndexAfterOffset(2, 1, 3))
+        assertEquals(-1, Top.getRowIndexAfterOffset(2, 2, 3))
+
+        assertEquals(0, CenterVertically.getRowIndexAfterOffset(2, 0, 3))
+        assertEquals(1, CenterVertically.getRowIndexAfterOffset(2, 1, 3))
+        assertEquals(-1, CenterVertically.getRowIndexAfterOffset(2, 2, 3))
+
+        assertEquals(-1, Bottom.getRowIndexAfterOffset(2, 0, 3))
+        assertEquals(0, Bottom.getRowIndexAfterOffset(2, 1, 3))
+        assertEquals(1, Bottom.getRowIndexAfterOffset(2, 2, 3))
+    }
+/*
+    @Test
+    fun testVerticalStringAlignmentBuilder() {
+        fun assert(
+            jointed: Alignment,
+            input: List<String>,
+            maxRow: Int,
+            boundary: Int,
+            vararg expect: String
+        ) {
+            assertEquals(
+                expect.toList(),
+                jointed.buildContent(input, boundary, maxRow)
+            )
+        }
+
+        assert(
+            Start + Top, listOf("Hello world"), 2, 16,
+            "Hello world     ", "                "
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello world"), 2, 16,
+            "Hello world     ", "                "
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello world"), 2, 16,
+            "                ", "Hello world     "
+        )
+
+        assert(
+            Start + Top, listOf("Hello world"), 3, 16,
+            "Hello world     ", "                ", "                "
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello world"), 3, 16,
+            "                ", "Hello world     ", "                "
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello world"), 3, 16,
+            "                ", "                ", "Hello world     "
+        )
+
+        assert(
+            Start + Top, listOf("Hello", "world"), 2, 5,
+            "Hello", "world"
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello", "world"), 2, 5,
+            "Hello", "world"
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello", "world"), 2, 5,
+            "Hello", "world"
+        )
+
+        assert(
+            Start + Top, listOf("Hello", "world"), 3, 5,
+            "Hello", "world", "     "
+        )
+
+        assert(
+            Start + CenterVertically, listOf("Hello", "world"), 3, 5,
+            "Hello", "world", "     "
+        )
+
+        assert(
+            Start + Bottom, listOf("Hello", "world"), 3, 5,
+            "     ", "Hello", "world"
+        )
+
+        assert(
+            Start + Top, listOf("Hello", "world"), 4, 5,
+            "Hello", "world", "     ", "     "
+        )
+        assert(
+            Start + CenterVertically, listOf("Hello", "world"), 4, 5,
+            "     ", "Hello", "world", "     "
+        )
+        assert(
+            Start + Bottom, listOf("Hello", "world"), 4, 5,
+            "     ", "     ", "Hello", "world",
+        )
+    }*/
 }
