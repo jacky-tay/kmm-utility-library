@@ -8,10 +8,6 @@ import kmm.jacky.utilitylibrary.models.row.IRow
 import kotlin.math.floor
 import kotlin.math.max
 
-internal fun MutableList<String>.appendToLastItem(subString: String) {
-    this[size - 1] += subString
-}
-
 inline fun <T> List<T>.firstIndexFrom(from: Int, predicate: (T) -> Boolean): Int {
     val start = max(0, from)
     for (i in start until size) {
