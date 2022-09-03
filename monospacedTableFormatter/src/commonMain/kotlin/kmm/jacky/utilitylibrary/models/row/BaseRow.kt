@@ -17,30 +17,16 @@ import kmm.jacky.utilitylibrary.public.Formatters
 import kotlin.reflect.KClass
 
 internal class BaseRow(
-    private val policy: LineWrap,
     elements: List<Any>,
+    private val policy: LineWrap = LineWrap.Normal(WordBreakPolicy.Hyphen),
+    override var width: Int = 0,
+    internal val definitions: List<Column.Definition>? = null,
     rowFormatters: Formatters? = null,
     formatter: ((KClass<*>) -> Any?)? = null
 ) : IRow {
 
-    override var width: Int = 0
-
     var columns: List<Cell>
         private set
-
-    internal constructor(
-        vararg arguments: Any
-    ) : this(LineWrap.Normal(WordBreakPolicy.Hyphen), arguments.toList())
-
-    internal constructor(
-        width: Int,
-        policy: LineWrap,
-        elements: List<Any>,
-        rowFormatters: Formatters? = null,
-        formatter: ((KClass<*>) -> Any?)? = null
-    ) : this(policy, elements, rowFormatters, formatter) {
-        this.width = width
-    }
 
     init {
         fun getFormatter(input: Any): Any? {
@@ -57,10 +43,7 @@ internal class BaseRow(
                 else -> Cell(element)
             }.also { it.index = index }
         }
-    }
-
-    internal fun insertColumnDefinition(definitions: List<Column.Definition>) {
-        columns.insertColumnDefinition(definitions)
+        definitions?.let { columns.insertColumnDefinition(it) }
     }
 
     override fun toDisplayString(reference: List<Column.Reference>?): List<String> {

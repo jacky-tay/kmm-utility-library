@@ -17,15 +17,14 @@ class BaseRowTests {
         val row = BaseRow(
             width = 22,
             policy = LineWrap.Normal(WordBreakPolicy.Hyphen),
-            elements = listOf("hello", "world", "10")
-        )
-        row.insertColumnDefinition(
-            listOf(
+            elements = listOf("hello", "world", "10"),
+            definitions = listOf(
                 Column.Definition(size = CellSize.ExpandToFit),
                 Column.Definition(size = CellSize.ExpandToFit),
                 Column.Definition(size = CellSize.ShrinkToFit)
             )
         )
+
         val actual = row.toDisplayString(null)
         val expect = listOf("hello     world     10")
         assertEquals(expect, actual)
@@ -36,17 +35,16 @@ class BaseRowTests {
         val row = BaseRow(
             width = 22,
             policy = LineWrap.Normal(WordBreakPolicy.Hyphen),
-            elements = listOf("hello", "hello world !!", "10")
-        )
-        row.insertColumnDefinition(
-            listOf(
+            elements = listOf("hello", "hello world !!", "10"),
+            definitions = listOf(
                 Column.Definition(size = CellSize.ExpandToFit),
                 Column.Definition(size = CellSize.ExpandToFit),
                 Column.Definition(size = CellSize.ShrinkToFit, alignment = Alignment.Center)
             )
         )
         val actual = row.toDisplayString(null)
-        val expect = listOf("hello     hello       ", "          world     10", "          !!          ")
+        val expect =
+            listOf("hello     hello       ", "          world     10", "          !!          ")
         assertEquals(expect, actual)
     }
 
@@ -55,10 +53,8 @@ class BaseRowTests {
         val row = BaseRow(
             width = 22,
             policy = LineWrap.Normal(WordBreakPolicy.Hyphen),
-            elements = listOf("hello", "world !!", "10")
-        )
-        row.insertColumnDefinition(
-            listOf(
+            elements = listOf("hello", "world !!", "10"),
+            definitions = listOf(
                 Column.Definition(size = CellSize.ExpandToFit),
                 Column.Definition(size = CellSize.ExpandToFit),
                 Column.Definition(size = CellSize.ShrinkToFit, alignment = Alignment.Bottom)
@@ -72,11 +68,16 @@ class BaseRowTests {
     @Test
     fun testBaseRowWithCenterAlignment() {
         val row = BaseRow(
-            "Brandy's General Store\n321 Any Street\nAnytown, NY 10121\n(212) 555-5555".center
+            elements = listOf("Brandy's General Store\n321 Any Street\nAnytown, NY 10121\n(212) 555-5555".center),
+            width = 22
         )
-        row.width = 22
         val actual = row.toDisplayString(null)
-        val expect = listOf("Brandy's General Store", "    321 Any Street    ", "   Anytown, NY 10121  ", "    (212) 555-5555    ")
+        val expect = listOf(
+            "Brandy's General Store",
+            "    321 Any Street    ",
+            "   Anytown, NY 10121  ",
+            "    (212) 555-5555    "
+        )
         assertEquals(expect, actual)
     }
 }

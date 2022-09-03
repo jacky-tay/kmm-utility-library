@@ -7,6 +7,7 @@ import kmm.jacky.utilitylibrary.models.column.Column
 import kmm.jacky.utilitylibrary.models.row.DividerRow
 import kmm.jacky.utilitylibrary.models.row.IRow
 import kmm.jacky.utilitylibrary.models.row.BaseRow
+import kmm.jacky.utilitylibrary.models.row.RowDefinition
 import kmm.jacky.utilitylibrary.models.row.SpacerRow
 import kmm.jacky.utilitylibrary.public.Formatters
 
@@ -20,7 +21,7 @@ class Table internal constructor(
     internal val rows: List<IRow>
         get() = _rows
 
-    private val definitions = mutableListOf<Pair<Int, List<Column.Definition>>>()
+    private val definitions = mutableListOf<RowDefinition>()
 
     private inline fun <reified T> filter(input: MutableList<Any>) {
         if (input.any { it is T }) {
@@ -43,20 +44,24 @@ class Table internal constructor(
         // ensuring no void function is included
         val filtered = processRowElements(elements)
 
-        val row = BaseRow(width = width, policy, filtered, rowFormatters = null) {
+        // add definition to row elements
+        val definition = getDefinition(_rows.size)
+        val row = BaseRow(
+            width = width,
+            policy = policy,
+            elements = filtered,
+            definitions = definition,
+            rowFormatters = null,
+        ) {
             formatters[it]
         }
 
-        val definition = getDefinition(_rows.size)
-        if (definition != null) {
-            row.insertColumnDefinition(definition)
-        }
         _rows.add(row)
     }
 
     @Suppress("FunctionName")
     fun Divider(char: String = divider): DividerRow {
-        val row = DividerRow(char)
+        val row = DividerRow(width, char)
         _rows.add(row)
         return row
     }
@@ -65,38 +70,37 @@ class Table internal constructor(
     fun CellDefinition(vararg definition: Column.Definition) {
         val list = definition.toList()
         if (!list.isValid(width)) return
-        definitions.add(Pair(_rows.size - 1, list))
+        definitions.add(RowDefinition(_rows.size - 1, list))
     }
 
     @Suppress("FunctionName")
     fun Spacer(weight: Int = 1): SpacerRow {
-        val row = SpacerRow(weight)
+        val row = SpacerRow(width, weight)
         _rows.add(row)
         return row
     }
 
     internal fun getDefinition(row: Int): List<Column.Definition>? {
         if (definitions.isEmpty()) return null
-        return definitions.lastOrNull { it.first < row }?.second
+        return definitions.lastOrNull { it.row < row }?.definitions
     }
 
     internal fun buildColumnReference() {
-        val firstDefinition = definitions.firstOrNull()
-        if (firstDefinition != null && firstDefinition.first > 0) {
-            // loop before
-            val references = rows.subList(0, firstDefinition.first)
-                .buildColumnReferencesFromDefinitions(firstDefinition.second, width)
-
-        }
-        for (definition in definitions) {
-
-        }
-        if (definitions.lastOrNull() != null) {
-
+        definitions.forEachIndexed { index, rowDefinition ->
+            val filteredRow =
+                rows.filter { (it as? BaseRow)?.definitions.hashCode() == rowDefinition.hashCode() }
+            rowDefinition.references =
+                filteredRow.buildColumnReferencesFromDefinitions(rowDefinition.definitions, width)
         }
     }
 
     override fun toString(): String {
-        TODO()
+        return rows.flatMapIndexed { index: Int, iRow: IRow ->
+            iRow.toDisplayString(getColumnReference(index))
+        }.joinToString("\n")
+    }
+
+    internal fun getColumnReference(row: Int): List<Column.Reference>? {
+        return null
     }
 }
