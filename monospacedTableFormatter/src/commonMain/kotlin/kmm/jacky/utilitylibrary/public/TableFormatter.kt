@@ -14,17 +14,22 @@ fun TableFormatter(
     width: Int,
     policy: LineWrap = LineWrap.Normal(WordBreakPolicy.Hyphen),
     divider: String = "-",
-    formatters: Formatters = DefaultFormatter(),
+    formatters: Formatters? = null,
     block: Table.() -> Unit
 ): String {
     val table =
-        Table(width = width, tablePolicy = policy, divider = divider, formatters = formatters)
+        Table(
+            width = width,
+            tablePolicy = policy,
+            divider = divider,
+            formatters = DefaultFormatter() + (formatters ?: emptyMap())
+        )
     block(table)
     table.buildColumnReference()
     return table.toString()
 }
 
 @Suppress("FunctionName")
-fun DefaultFormatter() = mutableMapOf<KClass<*>, Any>(
+fun DefaultFormatter() = mapOf<KClass<*>, Any>(
     CurrencyWrapper::class to CurrencyFormatter()
 )
