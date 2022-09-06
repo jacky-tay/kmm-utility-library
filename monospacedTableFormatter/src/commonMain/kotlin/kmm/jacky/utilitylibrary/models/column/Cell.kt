@@ -17,7 +17,10 @@ class Cell(
         is DividerWrapper -> "" // TODO
         else -> input.toString()
     }
-    override var definition: Column.Definition = Column.Definition()
+    override var definition: Column.Definition = Column.Definition(
+        alignment = Alignment.Undefined,
+        size = CellSize.Undefined
+    )
 
     constructor(
         input: Any,
