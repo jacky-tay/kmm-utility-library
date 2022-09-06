@@ -34,10 +34,15 @@ internal fun List<Column.Definition>.isValid(width: Int): Boolean {
     return sum <= width
 }
 
-internal fun List<Column.Reference>.updatePosition(): List<Column.Reference> {
+internal fun List<Column.Reference>.updatePosition(boundary: Int): List<Column.Reference> {
     val spacer = spacingWidth()
     for (i in 1 until size) {
         this[i].start = this[i - 1].end + spacer
+    }
+    // when the last reference end does not equal to the boundary, then update its length to fit into boundary
+    // this usually happens when the result of the division is rounded, which overall does not have the match up boundary
+    if (last().end != boundary) {
+        last().len = boundary - last().start
     }
     return this
 }
@@ -51,8 +56,7 @@ internal fun List<Cell>.insertColumnDefinition(definitions: List<Column.Definiti
     } else if (fold(0) { sum, cell -> sum + cell.span } == definitions.size) {
         var i = 0
         for (cell in this) {
-            cell.index = i
-            cell.definition.alignment = definitions[i].alignment
+            cell.definition.alignment = cell.definition.alignment.update(definitions[i].alignment)
             if (cell.span == 1) {
                 cell.definition.size = definitions[i].size
             }
@@ -104,7 +108,7 @@ internal fun List<Column.Definition>.buildColumnReferencesFromRows(
         }
     }
 
-    return references.updatePosition()
+    return references.updatePosition(width)
 }
 
 internal fun List<IRow>.buildColumnReferencesFromDefinitions(

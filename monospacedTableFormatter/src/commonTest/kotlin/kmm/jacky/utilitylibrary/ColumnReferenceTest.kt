@@ -17,7 +17,7 @@ class ColumnReferenceTest {
     fun testUpdatePosition() {
         references = (0 until 4).map { Column.Reference(0) }
         references.forEach { it.len = 2 }
-        references.updatePosition()
+        references.updatePosition(17)
 
         assertEquals(4, references.size)
 
