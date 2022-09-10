@@ -15,7 +15,7 @@ class ColumnReferenceTest {
 
     @Test
     fun testUpdatePosition() {
-        references = (0 until 4).map { Column.Reference(0) }
+        references = (0 until 4).map { Column.Reference() }
         references.forEach { it.len = 2 }
         references.updatePosition(17)
 

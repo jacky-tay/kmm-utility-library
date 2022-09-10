@@ -18,9 +18,7 @@ interface Column {
         }
     }
 
-    data class Reference(
-        var end: Int
-    ) {
+    class Reference {
         var start: Int = 0
             set(value) {
                 field = value
@@ -32,5 +30,7 @@ interface Column {
                 field = value
                 end = start + value
             }
+
+        var end: Int = 0
     }
 }
