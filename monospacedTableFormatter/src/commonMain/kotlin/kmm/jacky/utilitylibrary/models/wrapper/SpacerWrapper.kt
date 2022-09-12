@@ -1,3 +1,3 @@
 package kmm.jacky.utilitylibrary.models.wrapper
 
-object SpacerWrapper
+internal object SpacerWrapper
