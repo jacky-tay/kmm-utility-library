@@ -3,12 +3,15 @@ package kmm.jacky.utilitylibrary.models
 import kmm.jacky.utilitylibrary.enums.LineWrap
 import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
 import kmm.jacky.utilitylibrary.extensions.isValid
+import kmm.jacky.utilitylibrary.models.column.Cell
 import kmm.jacky.utilitylibrary.models.column.Column
 import kmm.jacky.utilitylibrary.models.row.DividerRow
 import kmm.jacky.utilitylibrary.models.row.IRow
 import kmm.jacky.utilitylibrary.models.row.BaseRow
 import kmm.jacky.utilitylibrary.models.row.RowDefinition
 import kmm.jacky.utilitylibrary.models.row.SpacerRow
+import kmm.jacky.utilitylibrary.models.wrapper.DividerWrapper
+import kmm.jacky.utilitylibrary.models.wrapper.SpacerWrapper
 import kmm.jacky.utilitylibrary.public.Formatters
 
 class Table internal constructor(
@@ -20,8 +23,7 @@ class Table internal constructor(
     private val _rows = mutableListOf<IRow>()
     internal val rows: List<IRow>
         get() = _rows
-
-    private val definitions = mutableListOf<RowDefinition>()
+    internal val definitions = mutableListOf<RowDefinition>()
 
     private inline fun <reified T> filter(input: MutableList<Any>) {
         if (input.any { it is T }) {
@@ -60,10 +62,15 @@ class Table internal constructor(
     }
 
     @Suppress("FunctionName")
-    fun Divider(char: String = divider): DividerRow {
+    fun DividerRow(char: String = divider): DividerRow {
         val row = DividerRow(width, char)
         _rows.add(row)
         return row
+    }
+
+    @Suppress("FunctionName")
+    fun Divider(char: String = divider, span: Int = 1): Cell {
+        return Cell(DividerWrapper(char), span = span)
     }
 
     @Suppress("FunctionName")
@@ -74,10 +81,15 @@ class Table internal constructor(
     }
 
     @Suppress("FunctionName")
-    fun Spacer(weight: Int = 1): SpacerRow {
-        val row = SpacerRow(width, weight)
+    fun SpacerRow(row: Int = 1): SpacerRow {
+        val row = SpacerRow(width, row)
         _rows.add(row)
         return row
+    }
+
+    @Suppress("FunctionName")
+    fun Spacer(span: Int = 1): Cell {
+        return Cell(SpacerWrapper, span = span)
     }
 
     internal fun getDefinition(row: Int): List<Column.Definition>? {
@@ -86,9 +98,9 @@ class Table internal constructor(
     }
 
     internal fun buildColumnReference() {
-        definitions.forEachIndexed { index, rowDefinition ->
+        definitions.forEach { rowDefinition ->
             val filteredRow =
-                rows.filter { (it as? BaseRow)?.definitions.hashCode() == rowDefinition.hashCode() }
+                rows.filter { (it as? BaseRow)?.definitions.hashCode() == rowDefinition.definitions.hashCode() }
             rowDefinition.references =
                 filteredRow.buildColumnReferencesFromDefinitions(rowDefinition.definitions, width)
         }
@@ -101,6 +113,6 @@ class Table internal constructor(
     }
 
     internal fun getColumnReference(row: Int): List<Column.Reference>? {
-        return null
+        return definitions.lastOrNull { it.row < row }?.references
     }
 }
