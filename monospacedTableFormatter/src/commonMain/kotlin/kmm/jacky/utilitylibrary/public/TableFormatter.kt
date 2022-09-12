@@ -17,13 +17,12 @@ fun TableFormatter(
     formatters: Formatters? = null,
     block: Table.() -> Unit
 ): String {
-    val table =
-        Table(
-            width = width,
-            tablePolicy = policy,
-            divider = divider,
-            formatters = DefaultFormatter() + (formatters ?: emptyMap())
-        )
+    val table = Table(
+        width = width,
+        tablePolicy = policy,
+        divider = divider,
+        formatters = DefaultFormatter() + (formatters ?: emptyMap())
+    )
     block(table)
     table.buildColumnReference()
     return table.toString()
@@ -31,5 +30,5 @@ fun TableFormatter(
 
 @Suppress("FunctionName")
 fun DefaultFormatter() = mapOf<KClass<*>, Any>(
-    CurrencyWrapper::class to CurrencyFormatter()
+    CurrencyWrapper::class to CurrencyFormatter(),
 )

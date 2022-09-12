@@ -25,8 +25,7 @@ internal class BaseRow(
     formatter: ((KClass<*>) -> Any?)? = null
 ) : IRow {
 
-    var columns: List<Cell>
-        private set
+    internal var columns: List<Cell>
 
     init {
         fun getFormatter(input: Any): Any? {
@@ -34,14 +33,18 @@ internal class BaseRow(
             return rowFormatters?.get(type) ?: formatter?.invoke(type)
         }
 
-        columns = elements.mapIndexed { index, element ->
+        var index = 0
+        columns = elements.map { element ->
             when (element) {
                 is CurrencyWrapper -> Cell(element.injectFormatter(::getFormatter))
                 is DividerRow -> Cell(DividerWrapper(element.char))
                 is SpacerRow -> Cell(SpacerWrapper).span(element.weight)
                 is Cell -> element
                 else -> Cell(element)
-            }.also { it.index = index }
+            }.also {
+                it.index = index
+                index += it.span
+            }
         }
         definitions?.let { columns.insertColumnDefinition(it) }
     }
@@ -52,18 +55,24 @@ internal class BaseRow(
             width
         )
 
-        val cells = columns.map { it.buildString(references[it.index].len, policy) }
+        val cells = columns.map {
+            val ref = references[it.index]
+            val boundary = references[it.index + it.span - 1].end - ref.start
+            it.buildString(boundary, policy)
+        }
         val maxHeight = cells.maxOf { it.size }
 
         return (0 until maxHeight).map { row ->
             var string = " ".buildRepeat(width)
             columns.forEachIndexed { index, cell ->
-                val ref = references[index]
-                cell.definition.alignment.buildContent(cells[index], ref.len, row, maxHeight)?.let {
-                    val start = ref.start + it.prefix
-                    val text = cells[index][it.row]
-                    string = string.replaceRange(start, start + text.length, text)
-                }
+                val ref = references[cell.index]
+                val boundary = references[cell.index + cell.span - 1].end - ref.start
+                cell.definition.alignment.buildContent(cells[index], boundary, row, maxHeight)
+                    ?.let {
+                        val start = ref.start + it.prefix
+                        val text = cells[index][it.row]
+                        string = string.replaceRange(start, start + text.length, text)
+                    }
             }
             string
         }

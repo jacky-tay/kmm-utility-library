@@ -19,30 +19,26 @@ inline fun <T> List<T>.firstIndexFrom(from: Int, predicate: (T) -> Boolean): Int
 
 internal fun List<*>.spacingWidth(): Int = if (size > 4) 2 else 3
 
+// spacing count should be size - 1 multiply by spacing width
+internal fun List<*>.totalSpacingWidth(): Int = (size - 1) * spacingWidth()
+
 internal fun List<Column.Definition>.isValid(width: Int): Boolean {
-    // spacing count should be size - 1 multiply by spacing width
-    val totalSpacingWidth = (size - 1) * spacingWidth()
-    var sum = totalSpacingWidth
+    var sum = totalSpacingWidth()
     for (definition in this) {
         val size = definition.size
         sum += when (size) {
             is CellSize.FixedWidth -> size.width
-            is CellSize.Percentage -> ((width - totalSpacingWidth) * size.factor).toInt()
+            is CellSize.Percentage -> ((width - totalSpacingWidth()) * size.factor).toInt()
             else -> 1 // all column should have minimum width of 1
         }
     }
     return sum <= width
 }
 
-internal fun List<Column.Reference>.updatePosition(boundary: Int): List<Column.Reference> {
+internal fun List<Column.Reference>.updatePosition(): List<Column.Reference> {
     val spacer = spacingWidth()
     for (i in 1 until size) {
         this[i].start = this[i - 1].end + spacer
-    }
-    // when the last reference end does not equal to the boundary, then update its length to fit into boundary
-    // this usually happens when the result of the division is rounded, which overall does not have the match up boundary
-    if (last().end != boundary) {
-        last().len = boundary - last().start
     }
     return this
 }
@@ -72,16 +68,10 @@ internal fun List<Column.Definition>.buildColumnReferencesFromRows(
     rows: List<BaseRow>,
     width: Int
 ): List<Column.Reference> {
-    val availableWidth = width - ((size - 1) * spacingWidth())
+    val availableWidth = width - totalSpacingWidth()
     var remainingWidth: Double = availableWidth.toDouble()
-    val references = map { Column.Reference(availableWidth) }
-
-    // set undefined size to equally spacing 1
-    forEachIndexed { index, definition ->
-        if (definition.size is CellSize.Undefined) {
-            this[index].size = CellSize.EquallySpacing(1)
-        }
-    }
+    val references = map { Column.Reference() }
+    val equallySpacingSet = mutableMapOf<Int, Int>()
 
     for (i in indices) {
         val size = this[i].size
@@ -89,26 +79,25 @@ internal fun List<Column.Definition>.buildColumnReferencesFromRows(
             is CellSize.FixedWidth -> size.width
             is CellSize.Percentage -> floor(availableWidth * size.factor).toInt()
             is CellSize.ShrinkToFit -> rows.maxOf { it.getColumnWidthAt(i, size) }
-            else -> null // do nothing for now
+            is CellSize.ExpandToFit -> equallySpacingSet.put(i, 1).run { null }
+            is CellSize.EquallySpacing -> equallySpacingSet.put(i, size.weight).run { null }
+            // set undefined to fill max
+            is CellSize.Undefined -> equallySpacingSet.put(i, 1).run { null }
         }?.also { cellWidth ->
             references[i].len = cellWidth
             remainingWidth -= cellWidth
         }
     }
+    val totalWeight = equallySpacingSet.values.sum()
+    val weightWidth = floor(
+        remainingWidth / max(1, totalWeight) // take max 1, in case totalWeight is zero
+    ).toInt()
 
-    val totalWeight = fold(0) { sum, element ->
-        sum + element.size.getWeightIfAvailable()
-    }
-    if (totalWeight > 0) {
-        for (i in indices) {
-            val weight = this[i].size.getWeightIfAvailable()
-            if (weight > 0) {
-                references[i].len = floor((remainingWidth * weight) / totalWeight).toInt()
-            }
-        }
+    equallySpacingSet.forEach {
+        references[it.key].len = weightWidth * it.value
     }
 
-    return references.updatePosition(width)
+    return references.updatePosition()
 }
 
 internal fun List<IRow>.buildColumnReferencesFromDefinitions(
