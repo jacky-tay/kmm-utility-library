@@ -5,9 +5,10 @@ import kmm.jacky.utilitylibrary.enums.CellSize
 import kmm.jacky.utilitylibrary.enums.LineWrap
 import kmm.jacky.utilitylibrary.extensions.buildRepeat
 import kmm.jacky.utilitylibrary.models.wrapper.DividerWrapper
+import kmm.jacky.utilitylibrary.models.wrapper.SpacerWrapper
 
 class Cell(
-    val input: Any,
+    private val input: Any,
     var span: Int = 1,
 ) : Column {
     var index = 0
@@ -15,6 +16,7 @@ class Cell(
     val content: String = when (input) {
         is String -> input
         is DividerWrapper -> "" // TODO
+        is SpacerWrapper -> "" // TODO
         else -> input.toString()
     }
     override var definition: Column.Definition = Column.Definition(
@@ -52,12 +54,14 @@ class Cell(
             when (input) {
                 is String -> input
                 is DividerWrapper -> input.char.buildRepeat(boundary)
+                is SpacerWrapper -> " ".buildRepeat(boundary)
                 else -> input.toString()
             }
         )
         else when (input) {
             is String -> policy.wrap(input, boundary)
             is DividerWrapper -> listOf(input.char.buildRepeat(boundary))
+            is SpacerWrapper -> listOf(" ".buildRepeat(boundary))
             else -> policy.wrap(input.toString(), boundary)
         }
 }
