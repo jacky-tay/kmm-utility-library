@@ -5,13 +5,12 @@ import kmm.jacky.utilitylibrary.enums.LineWrap
 import kmm.jacky.utilitylibrary.enums.WordBreakPolicy
 import kmm.jacky.utilitylibrary.extensions.buildColumnReferencesFromDefinitions
 import kmm.jacky.utilitylibrary.extensions.buildContent
-import kmm.jacky.utilitylibrary.extensions.buildPrefix
 import kmm.jacky.utilitylibrary.extensions.buildRepeat
 import kmm.jacky.utilitylibrary.extensions.insertColumnDefinition
 import kmm.jacky.utilitylibrary.models.column.Cell
+import kmm.jacky.utilitylibrary.models.column.Column
 import kmm.jacky.utilitylibrary.models.wrapper.CurrencyWrapper
 import kmm.jacky.utilitylibrary.models.wrapper.DividerWrapper
-import kmm.jacky.utilitylibrary.models.column.Column
 import kmm.jacky.utilitylibrary.models.wrapper.SpacerWrapper
 import kmm.jacky.utilitylibrary.public.Formatters
 import kotlin.reflect.KClass
@@ -81,7 +80,7 @@ internal class BaseRow(
     internal fun getColumnWidthAt(index: Int, size: CellSize): Int {
         val cell = columns.firstOrNull { it.index == index } ?: return 0
         if (size == CellSize.ShrinkToFit) {
-            return cell.content.lines().maxBy { it.length }.length
+            return cell.content.lines().maxOf { it.length }
         }
         return cell.content.length
     }

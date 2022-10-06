@@ -43,7 +43,7 @@ sealed interface CellSize {
     /**
      * Percentage
      *
-     * @property factor
+     * @property factor Double, must be range between 0.0 until 1.0 inclusively
      */
     class Percentage(val factor: Double) : CellSize { // range between 0.0 ... 1.0
         init {
